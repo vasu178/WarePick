@@ -1,0 +1,15 @@
+{
+  "name": "task-assignment-service",
+  "version": "1.0.0",
+  "description": "WarePick Task Assignment Service - creates and assigns picking tasks to bots",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "@supabase/supabase-js": "^2.49.4",
+    "amqplib": "^0.10.5"
+  }
+}
