@@ -4,10 +4,10 @@
 
 const express = require('express');
 const router = express.Router();
-const { createServiceClient } = require('../../../shared/supabaseClient');
-const { connectRabbitMQ, publish } = require('../../../shared/rabbitmq');
-const EVENTS = require('../../../shared/events');
-const STATUSES = require('../../../shared/statuses');
+const { createServiceClient } = require('../../../../shared/supabaseClient');
+const { connectRabbitMQ, publish } = require('../../../../shared/rabbitmq');
+const EVENTS = require('../../../../shared/events');
+const STATUSES = require('../../../../shared/statuses');
 const { SERVICE_NAME, DEMO_CUSTOMERS, DEMO_DESTINATIONS, DEMO_SKUS } = require('../config');
 
 const supabase = createServiceClient();

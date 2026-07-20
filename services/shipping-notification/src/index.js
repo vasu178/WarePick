@@ -4,10 +4,10 @@
 
 const express = require('express');
 const cors = require('cors');
-const { createServiceClient } = require('../../shared/supabaseClient');
-const { connectRabbitMQ, publish } = require('../../shared/rabbitmq');
-const EVENTS = require('../../shared/events');
-const STATUSES = require('../../shared/statuses');
+const { createServiceClient } = require('../../../shared/supabaseClient');
+const { connectRabbitMQ, publish } = require('../../../shared/rabbitmq');
+const EVENTS = require('../../../shared/events');
+const STATUSES = require('../../../shared/statuses');
 
 const SERVICE_NAME = 'shipping-notification';
 const PORT = process.env.PORT || 3006;

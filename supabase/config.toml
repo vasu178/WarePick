@@ -1,5 +1,4 @@
-[project]
-id = "warepick"
+project_id = "warepick"
 
 [api]
 enabled = true

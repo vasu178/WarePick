@@ -4,8 +4,8 @@
 
 const express = require('express');
 const cors = require('cors');
-const { connectRabbitMQ, consume } = require('../../shared/rabbitmq');
-const EVENTS = require('../../shared/events');
+const { connectRabbitMQ, consume } = require('../../../shared/rabbitmq');
+const EVENTS = require('../../../shared/events');
 const { SERVICE_NAME, PORT } = require('./config');
 const inventoryRoutes = require('./routes/inventory');
 const { handleOrderCreated } = require('./consumers/orderCreated');

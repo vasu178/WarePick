@@ -4,7 +4,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { createServiceClient } = require('../../../shared/supabaseClient');
+const { createServiceClient } = require('../../../../shared/supabaseClient');
 const { SERVICE_NAME } = require('../config');
 
 const supabase = createServiceClient();

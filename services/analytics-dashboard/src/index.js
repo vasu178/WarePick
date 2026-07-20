@@ -7,8 +7,8 @@
 
 const express = require('express');
 const cors = require('cors');
-const { createServiceClient } = require('../../shared/supabaseClient');
-const { connectRabbitMQ } = require('../../shared/rabbitmq');
+const { createServiceClient } = require('../../../shared/supabaseClient');
+const { connectRabbitMQ } = require('../../../shared/rabbitmq');
 
 const SERVICE_NAME = 'analytics-dashboard';
 const PORT = process.env.PORT || 3007;

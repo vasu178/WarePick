@@ -8,7 +8,7 @@
  * and updates the database only for state changes.
  */
 
-const { createServiceClient } = require('../../../shared/supabaseClient');
+const { createServiceClient } = require('../../../../shared/supabaseClient');
 const { MOVE_INTERVAL_MS, SHELF_POSITIONS, PACKING_POSITION, DOCK_POSITIONS } = require('../config');
 const SERVICE_NAME = 'bot-simulator';
 
@@ -40,7 +40,8 @@ function calculatePath(fromX, fromY, toX, toY) {
  * Move a bot along a path, broadcasting position at each step.
  */
 async function moveAlongPath(bot, path, status, broadcastChannel) {
-  for (const step of path) {
+  for (let i = 0; i < path.length; i++) {
+    const step = path[i];
     await new Promise((resolve) => setTimeout(resolve, MOVE_INTERVAL_MS));
 
     // Broadcast ephemeral position update (no DB write per step)
@@ -55,6 +56,7 @@ async function moveAlongPath(bot, path, status, broadcastChannel) {
         status,
         taskId: bot.current_task_id,
         timestamp: Date.now(),
+        path: path.slice(i),
       },
     });
   }
@@ -85,9 +87,9 @@ async function moveAlongPath(bot, path, status, broadcastChannel) {
  * @param {object} channel - RabbitMQ channel for publishing
  */
 async function simulatePicking(bot, shelfCodes, taskId, channel) {
-  const { publish } = require('../../../shared/rabbitmq');
-  const EVENTS = require('../../../shared/events');
-  const STATUSES = require('../../../shared/statuses');
+  const { publish } = require('../../../../shared/rabbitmq');
+  const EVENTS = require('../../../../shared/events');
+  const STATUSES = require('../../../../shared/statuses');
 
   // Create Supabase Broadcast channel
   const broadcastChannel = supabase.channel('warehouse-floor');
@@ -205,6 +207,7 @@ async function simulatePicking(bot, shelfCodes, taskId, channel) {
       status: 'idle',
       taskId: null,
       timestamp: Date.now(),
+      path: [],
     },
   });
 

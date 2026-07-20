@@ -2,7 +2,7 @@
  * Bot Simulator — Consumer: task.assigned
  */
 
-const { createServiceClient } = require('../../../shared/supabaseClient');
+const { createServiceClient } = require('../../../../shared/supabaseClient');
 const { simulatePicking } = require('../simulation/movement');
 const SERVICE_NAME = 'bot-simulator';
 

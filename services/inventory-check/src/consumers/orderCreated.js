@@ -5,10 +5,10 @@
  * Reserves inventory if all items available, otherwise fails the order.
  */
 
-const { createServiceClient } = require('../../../shared/supabaseClient');
-const { publish } = require('../../../shared/rabbitmq');
-const EVENTS = require('../../../shared/events');
-const STATUSES = require('../../../shared/statuses');
+const { createServiceClient } = require('../../../../shared/supabaseClient');
+const { publish } = require('../../../../shared/rabbitmq');
+const EVENTS = require('../../../../shared/events');
+const STATUSES = require('../../../../shared/statuses');
 const { SERVICE_NAME } = require('../config');
 
 const supabase = createServiceClient();

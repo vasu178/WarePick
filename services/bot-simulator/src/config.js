@@ -6,22 +6,22 @@ module.exports = {
   // Warehouse grid positions
   DOCK_POSITIONS: [
     { x: 2, y: 1 },
-    { x: 5, y: 1 },
-    { x: 8, y: 1 },
-    { x: 11, y: 1 },
+    { x: 6, y: 1 },
+    { x: 10, y: 1 },
     { x: 14, y: 1 },
+    { x: 18, y: 1 },
   ],
 
   // Shelf code → grid coordinate mapping
   SHELF_POSITIONS: {
-    'A1': { x: 3, y: 4 },
-    'A2': { x: 8, y: 4 },
-    'B1': { x: 3, y: 7 },
-    'B2': { x: 8, y: 7 },
-    'C1': { x: 3, y: 10 },
-    'C2': { x: 8, y: 10 },
+    'A1': { x: 2, y: 3 },
+    'A2': { x: 2, y: 6 },
+    'B1': { x: 6, y: 3 },
+    'B2': { x: 6, y: 6 },
+    'C1': { x: 10, y: 3 },
+    'C2': { x: 10, y: 6 },
   },
 
   // Packing zone position (bot goes here after picking)
-  PACKING_POSITION: { x: 15, y: 13 },
+  PACKING_POSITION: { x: 7, y: 15 },
 };
