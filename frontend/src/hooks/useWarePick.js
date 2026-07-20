@@ -99,7 +99,8 @@ export function useAnalytics(refreshInterval = 5000) {
 
   const fetchSummary = useCallback(async () => {
     try {
-      const res = await fetch(`http://localhost:3007/analytics/summary`);
+      const analyticsBase = import.meta.env.VITE_ANALYTICS_BASE_URL || 'http://localhost:3007';
+      const res = await fetch(`${analyticsBase}/analytics/summary`);
       if (res.ok) {
         const data = await res.json();
         setSummary(data);
