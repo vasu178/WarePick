@@ -28,10 +28,19 @@ export function useRealtimeTable(tableName, options = {}) {
       .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, (payload) => {
         setData((prev) => {
           if (payload.eventType === 'INSERT') {
+            if (select !== '*') {
+              setTimeout(() => {
+                supabase.from(tableName).select(select).eq('id', payload.new.id).single().then(({ data }) => {
+                  if (data) {
+                    setData((current) => current.map((r) => (r.id === data.id ? data : r)));
+                  }
+                });
+              }, 500);
+            }
             return [payload.new, ...prev].slice(0, limit);
           }
           if (payload.eventType === 'UPDATE') {
-            return prev.map((row) => (row.id === payload.new.id ? payload.new : row));
+            return prev.map((row) => (row.id === payload.new.id ? { ...row, ...payload.new } : row));
           }
           if (payload.eventType === 'DELETE') {
             return prev.filter((row) => row.id !== payload.old.id);

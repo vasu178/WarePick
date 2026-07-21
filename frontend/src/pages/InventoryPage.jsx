@@ -1,14 +1,63 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 /**
  * InventoryPage — Inventory monitor with KPIs, SKU directory, and event log.
  * Maps to Stitch screens: "WarePick Inventory & Warehouse Management" + "Inventory & Stock"
  */
 export default function InventoryPage({ inventory = [], orders = [] }) {
-  // Calculate KPIs
   const totalUnits = inventory.reduce((sum, item) => sum + (item.available_quantity || 0) + (item.reserved_quantity || 0), 0);
   const lowStockItems = inventory.filter(item => item.available_quantity <= 10);
   const totalReserved = inventory.reduce((sum, item) => sum + (item.reserved_quantity || 0), 0);
+  const [restocking, setRestocking] = useState(false);
+
+  const handleAddStock = async () => {
+    setRestocking(true);
+    try {
+      const { supabase } = await import('../lib/supabase');
+      const inventoryDefaults = [
+        { sku: 'SKU-1001', available_quantity: 40, reserved_quantity: 0 },
+        { sku: 'SKU-1002', available_quantity: 80, reserved_quantity: 0 },
+        { sku: 'SKU-1003', available_quantity: 35, reserved_quantity: 0 },
+        { sku: 'SKU-1004', available_quantity: 25, reserved_quantity: 0 },
+        { sku: 'SKU-1005', available_quantity: 30, reserved_quantity: 0 },
+        { sku: 'SKU-1006', available_quantity: 50, reserved_quantity: 0 },
+      ];
+      
+      for (const inv of inventoryDefaults) {
+        await supabase
+          .from('inventory')
+          .update({ available_quantity: inv.available_quantity, reserved_quantity: inv.reserved_quantity })
+          .eq('sku', inv.sku);
+      }
+    } catch (err) {
+      console.error('Failed to reset inventory', err);
+    } finally {
+      setRestocking(false);
+    }
+  };
+
+  const handleExport = () => {
+    if (!inventory || inventory.length === 0) return;
+    
+    const headers = ['SKU', 'Product Name', 'Zone', 'Available', 'Reserved'];
+    const rows = inventory.map(item => [
+      item.sku,
+      `"${item.product_name}"`,
+      item.zone || 'Z1-R1',
+      item.available_quantity,
+      item.reserved_quantity
+    ]);
+    
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `inventory_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Generate event log from recent orders
   const recentEvents = (orders || []).slice(0, 8).map((order, idx) => {
@@ -35,8 +84,10 @@ export default function InventoryPage({ inventory = [], orders = [] }) {
             <p className="font-body-md text-body-md text-on-surface-variant mt-unit">Live tracking across all zones</p>
           </div>
           <div className="flex gap-stack-sm">
-            <button className="px-4 py-2 bg-[#1C1C1E] border border-outline-variant rounded font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors">Export Data</button>
-            <button className="px-4 py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded font-bold hover:bg-primary-fixed-dim transition-colors shadow-[0_0_15px_rgba(173,198,255,0.2)]">Add Stock</button>
+            <button onClick={handleExport} className="px-4 py-2 bg-[#1C1C1E] border border-outline-variant rounded font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors">Export Data</button>
+            <button onClick={handleAddStock} disabled={restocking} className={`px-4 py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded font-bold transition-colors shadow-[0_0_15px_rgba(173,198,255,0.2)] ${restocking ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary-fixed-dim'}`}>
+              {restocking ? 'Adding...' : 'Add Stock'}
+            </button>
           </div>
         </div>
         

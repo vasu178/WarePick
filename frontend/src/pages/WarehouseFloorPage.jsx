@@ -1,11 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 /**
  * Convert backend grid coordinates (21x17) to the new 800x600 SVG space.
  */
 function gridToNewSVG(gx, gy) {
-  return [64 + (gx || 0) * 32, 64 + (gy || 0) * 32];
+  // Shift X by -16 so that gx=2,6,10,14,18 (lanes) map perfectly to 112, 240, 368, 496, 624
+  return [48 + (gx || 0) * 32, 64 + (gy || 0) * 32];
 }
 
 function mapBotStatusToColor(status) {
@@ -53,6 +54,15 @@ function DynamicBot({ bot, position, onClick }) {
 }
 
 export default function WarehouseFloorPage({ bots = [], botPositions = {}, orders = [], onBotClick }) {
+  const [zoom, setZoom] = useState(1);
+  const mapWidth = 800;
+  const mapHeight = 620;
+  const viewBoxWidth = mapWidth / zoom;
+  const viewBoxHeight = mapHeight / zoom;
+  const viewBoxX = (mapWidth - viewBoxWidth) / 2;
+  const viewBoxY = (mapHeight - viewBoxHeight) / 2;
+  const viewBox = `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`;
+
   // Metrics calculation
   const orderCounts = (orders || []).reduce((acc, o) => {
     acc[o.status] = (acc[o.status] || 0) + 1;
@@ -94,8 +104,34 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
         {/* Central Map Area */}
         <div className="flex-1 flex flex-col gap-6 min-h-0">
           <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex-1 relative overflow-hidden flex items-center justify-center">
+            
+            {/* Zoom Controls */}
+            <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
+              <button 
+                onClick={() => setZoom(prev => Math.min(prev + 0.2, 3))}
+                className="w-8 h-8 bg-surface border border-outline-variant rounded flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors shadow-sm"
+                title="Zoom In"
+              >
+                <i className="fa-solid fa-plus"></i>
+              </button>
+              <button 
+                onClick={() => setZoom(prev => Math.max(prev - 0.2, 0.5))}
+                className="w-8 h-8 bg-surface border border-outline-variant rounded flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors shadow-sm"
+                title="Zoom Out"
+              >
+                <i className="fa-solid fa-minus"></i>
+              </button>
+              <button 
+                onClick={() => setZoom(1)}
+                className="w-8 h-8 bg-surface border border-outline-variant rounded flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors shadow-sm text-xs font-semibold"
+                title="Reset Zoom"
+              >
+                1x
+              </button>
+            </div>
+
             {/* SVG Interactive Map */}
-            <svg className="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+            <svg className="w-full h-full transition-all duration-300 ease-out" viewBox={viewBox} xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <pattern height="40" id="grid" patternUnits="userSpaceOnUse" width="40">
                   <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#414755" strokeWidth="0.5"></path>
@@ -113,25 +149,25 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
               </defs>
               
               {/* Background Grid */}
-              <rect fill="url(#grid)" height="100%" width="100%"></rect>
+              <rect fill="url(#grid)" height="100%" width="100%" x={viewBoxX} y={viewBoxY}></rect>
               
               {/* Zones */}
-              <rect className="zone-border" fill="none" height="48" stroke="#8b90a0" width="448" x="144" y="32"></rect>
-              <text className="zone-text" fill="#c1c6d7" fontSize="12" textAnchor="middle" x="368" y="60">INBOUND / RECEIVING</text>
-              <path d="M 368 80 L 368 90" markerEnd="url(#arrow-bot1)" stroke="#8b90a0" strokeWidth="2"></path>
+              <rect className="zone-border" fill="none" height="48" stroke="#8b90a0" width="448" x="144" y="16"></rect>
+              <text className="zone-text" fill="#c1c6d7" fontSize="12" textAnchor="middle" x="368" y="44">INBOUND / RECEIVING</text>
+              <path d="M 368 64 L 368 74" markerEnd="url(#arrow-bot1)" stroke="#8b90a0" strokeWidth="2"></path>
               
-              <rect className="zone-border" fill="none" height="60" stroke="#ffb874" width="300" x="218" y="520"></rect>
-              <text className="zone-text" fill="#ffb874" fontSize="12" textAnchor="middle" x="368" y="540">PACKING STATION</text>
-              <rect fill="#31353d" height="20" rx="2" stroke="#ffb874" strokeWidth="1" width="40" x="298" y="550"></rect>
-              <text fill="#ffb874" fontFamily="Inter" fontSize="8" textAnchor="middle" x="318" y="561">P1</text>
-              <rect fill="#31353d" height="20" rx="2" stroke="#ffb874" strokeWidth="1" width="40" x="398" y="550"></rect>
-              <text fill="#ffb874" fontFamily="Inter" fontSize="8" textAnchor="middle" x="418" y="561">P2</text>
+              <rect className="zone-border" fill="none" height="60" stroke="#ffb874" width="300" x="218" y="540"></rect>
+              <text className="zone-text" fill="#ffb874" fontSize="12" textAnchor="middle" x="368" y="560">PACKING STATION</text>
+              <rect fill="#31353d" height="20" rx="2" stroke="#ffb874" strokeWidth="1" width="40" x="298" y="570"></rect>
+              <text fill="#ffb874" fontFamily="Inter" fontSize="8" textAnchor="middle" x="318" y="581">P1</text>
+              <rect fill="#31353d" height="20" rx="2" stroke="#ffb874" strokeWidth="1" width="40" x="398" y="570"></rect>
+              <text fill="#ffb874" fontFamily="Inter" fontSize="8" textAnchor="middle" x="418" y="581">P2</text>
               
-              <rect className="zone-border" fill="none" height="80" stroke="#adc6ff" width="140" x="550" y="500"></rect>
-              <text className="zone-text" fill="#adc6ff" fontSize="12" textAnchor="middle" x="620" y="525">SHIPPING AREA</text>
-              <path d="M 590 550 L 610 550 L 610 540 L 630 540 L 630 560 L 580 560 Z" fill="none" stroke="#adc6ff" strokeWidth="2"></path>
-              <circle cx="595" cy="565" fill="#adc6ff" r="4"></circle>
-              <circle cx="620" cy="565" fill="#adc6ff" r="4"></circle>
+              <rect className="zone-border" fill="none" height="80" stroke="#adc6ff" width="140" x="630" y="500"></rect>
+              <text className="zone-text" fill="#adc6ff" fontSize="12" textAnchor="middle" x="700" y="525">SHIPPING AREA</text>
+              <path d="M 670 550 L 690 550 L 690 540 L 710 540 L 710 560 L 660 560 Z" fill="none" stroke="#adc6ff" strokeWidth="2"></path>
+              <circle cx="675" cy="565" fill="#adc6ff" r="4"></circle>
+              <circle cx="700" cy="565" fill="#adc6ff" r="4"></circle>
               
               {/* Racks */}
               {/* Aisle A (x=144) */}

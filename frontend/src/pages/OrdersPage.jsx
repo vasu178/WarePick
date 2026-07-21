@@ -64,11 +64,11 @@ export default function OrdersPage({ orders = [] }) {
         <div className="lg:col-span-5 flex flex-col gap-gutter">
           {/* Create New Order Form */}
           <section className="bg-surface-container rounded-lg border border-outline-variant p-container-padding shadow-[0_4px_24px_-8px_rgba(0,0,0,0.5)]">
-            <div className="flex items-center gap-2 mb-stack-md border-b border-outline-variant pb-2">
+            <div className="flex items-center gap-2 mb-3 border-b border-outline-variant pb-2">
               <span className="material-symbols-outlined text-primary">add_box</span>
               <h2 className="font-title-sm text-title-sm text-on-surface">Create New Order</h2>
             </div>
-            <div className="space-y-stack-md">
+            <div className="space-y-3">
               <div>
                 <label className="block font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase">SKU Selection</label>
                 <div className="relative">
@@ -138,11 +138,11 @@ export default function OrdersPage({ orders = [] }) {
           
           {/* Demo Controls Section */}
           <section className="bg-surface-container rounded-lg border border-outline-variant p-container-padding shadow-[0_4px_24px_-8px_rgba(0,0,0,0.5)]">
-            <div className="flex items-center gap-2 mb-stack-md border-b border-outline-variant pb-2">
+            <div className="flex items-center gap-2 mb-3 border-b border-outline-variant pb-2">
               <span className="material-symbols-outlined text-tertiary">science</span>
               <h2 className="font-title-sm text-title-sm text-on-surface">Demo Controls</h2>
             </div>
-            <div className="space-y-stack-sm flex flex-col">
+            <div className="space-y-2 flex flex-col">
               <button 
                 type="button" 
                 onClick={createDemoOrder}
@@ -170,7 +170,7 @@ export default function OrdersPage({ orders = [] }) {
                 type="button" 
                 onClick={resetSystem}
                 disabled={loading}
-                className="mt-4 bg-error/10 border border-error/50 text-error hover:bg-error hover:text-on-error font-label-caps text-label-caps py-2 px-4 rounded transition-colors flex items-center justify-center gap-2 uppercase disabled:opacity-50"
+                className="mt-2 bg-error/10 border border-error/50 text-error hover:bg-error hover:text-on-error font-label-caps text-label-caps py-2 px-4 rounded transition-colors flex items-center justify-center gap-2 uppercase disabled:opacity-50"
               >
                 <span className="material-symbols-outlined text-[18px]">warning</span>
                 System Reset
@@ -198,9 +198,9 @@ export default function OrdersPage({ orders = [] }) {
                     No orders yet — create one above!
                   </li>
                 )}
-                {orders.map((order, idx) => {
+                {orders.slice(0, 5).map((order, idx) => {
                   const color = getStatusColor(order.status);
-                  const isLast = idx === orders.length - 1;
+                  const isLast = idx === Math.min(orders.length, 5) - 1;
                   return (
                     <li key={order.id} className="border-b border-outline-variant/50 p-container-padding hover:bg-surface-variant/30 transition-colors flex gap-4">
                       <div className="flex flex-col items-center pt-1">
