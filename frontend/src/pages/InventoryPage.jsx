@@ -9,28 +9,27 @@ export default function InventoryPage({ inventory = [], orders = [] }) {
   const lowStockItems = inventory.filter(item => item.available_quantity <= 10);
   const totalReserved = inventory.reduce((sum, item) => sum + (item.reserved_quantity || 0), 0);
   const [restocking, setRestocking] = useState(false);
+  const [stockToAdd, setStockToAdd] = useState(50);
+  const [selectedSku, setSelectedSku] = useState('ALL');
 
-  const handleAddStock = async () => {
+  const submitAddStock = async () => {
+    if (stockToAdd <= 0) return;
     setRestocking(true);
     try {
       const { supabase } = await import('../lib/supabase');
-      const inventoryDefaults = [
-        { sku: 'SKU-1001', available_quantity: 40, reserved_quantity: 0 },
-        { sku: 'SKU-1002', available_quantity: 80, reserved_quantity: 0 },
-        { sku: 'SKU-1003', available_quantity: 35, reserved_quantity: 0 },
-        { sku: 'SKU-1004', available_quantity: 25, reserved_quantity: 0 },
-        { sku: 'SKU-1005', available_quantity: 30, reserved_quantity: 0 },
-        { sku: 'SKU-1006', available_quantity: 50, reserved_quantity: 0 },
-      ];
       
-      for (const inv of inventoryDefaults) {
+      const itemsToUpdate = selectedSku === 'ALL' 
+        ? inventory 
+        : inventory.filter(i => i.sku === selectedSku);
+
+      for (const item of itemsToUpdate) {
         await supabase
           .from('inventory')
-          .update({ available_quantity: inv.available_quantity, reserved_quantity: inv.reserved_quantity })
-          .eq('sku', inv.sku);
+          .update({ available_quantity: item.available_quantity + stockToAdd })
+          .eq('sku', item.sku);
       }
     } catch (err) {
-      console.error('Failed to reset inventory', err);
+      console.error('Failed to add inventory', err);
     } finally {
       setRestocking(false);
     }
@@ -76,6 +75,7 @@ export default function InventoryPage({ inventory = [], orders = [] }) {
   return (
     <>
       <div className="absolute inset-0 bg-pattern z-0 opacity-50"></div>
+      
       <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar p-margin flex flex-col gap-stack-lg">
         {/* Page Header */}
         <div className="flex justify-between items-end">
@@ -85,9 +85,6 @@ export default function InventoryPage({ inventory = [], orders = [] }) {
           </div>
           <div className="flex gap-stack-sm">
             <button onClick={handleExport} className="px-4 py-2 bg-[#1C1C1E] border border-outline-variant rounded font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors">Export Data</button>
-            <button onClick={handleAddStock} disabled={restocking} className={`px-4 py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded font-bold transition-colors shadow-[0_0_15px_rgba(173,198,255,0.2)] ${restocking ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary-fixed-dim'}`}>
-              {restocking ? 'Adding...' : 'Add Stock'}
-            </button>
           </div>
         </div>
         
@@ -140,13 +137,55 @@ export default function InventoryPage({ inventory = [], orders = [] }) {
             </div>
           </div>
           
-          {/* Real-time Event Log (Side Column) */}
-          <div className="lg:col-span-4 bg-[#1C1C1E] border border-[#2C2C2E] rounded-lg flex flex-col h-[600px] lg:row-span-2">
-            <div className="p-container-padding border-b border-[#2C2C2E] flex justify-between items-center bg-[#222428] rounded-t-lg">
-              <h3 className="font-title-sm text-title-sm text-on-surface">Event Log</h3>
-              <span className="material-symbols-outlined text-on-surface-variant text-sm">receipt_long</span>
+          {/* Side Column */}
+          <div className="lg:col-span-4 flex flex-col gap-gutter h-[600px] lg:row-span-2">
+            
+            {/* Quick Restock Side Feature */}
+            <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-lg shrink-0">
+              <div className="p-container-padding border-b border-[#2C2C2E] flex justify-between items-center bg-[#222428] rounded-t-lg">
+                <h3 className="font-title-sm text-title-sm text-on-surface">Quick Restock</h3>
+                <span className="material-symbols-outlined text-on-surface-variant text-sm">add_box</span>
+              </div>
+              <div className="p-container-padding flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Select Product</label>
+                  <select 
+                    value={selectedSku}
+                    onChange={e => setSelectedSku(e.target.value)}
+                    className="bg-[#1C1C1E] border border-outline-variant rounded px-3 py-2 text-on-surface text-sm outline-none focus:border-primary"
+                  >
+                    <option value="ALL">All Products</option>
+                    {inventory.map(item => (
+                      <option key={item.sku} value={item.sku}>{item.product_name} ({item.sku})</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Units to Add</label>
+                  <input 
+                    type="number" 
+                    value={stockToAdd} 
+                    onChange={e => setStockToAdd(parseInt(e.target.value) || 0)}
+                    className="bg-[#1C1C1E] border border-outline-variant rounded px-3 py-2 text-on-surface text-sm outline-none focus:border-primary"
+                  />
+                </div>
+                <button 
+                  onClick={submitAddStock} 
+                  disabled={restocking || stockToAdd <= 0} 
+                  className={`w-full py-2 bg-primary text-on-primary rounded font-bold hover:bg-primary-fixed-dim transition-colors text-sm ${(restocking || stockToAdd <= 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {restocking ? 'Adding...' : 'Add Stock'}
+                </button>
+              </div>
             </div>
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-stack-sm">
+
+            {/* Real-time Event Log */}
+            <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-lg flex flex-col flex-1 min-h-0">
+              <div className="p-container-padding border-b border-[#2C2C2E] flex justify-between items-center bg-[#222428] rounded-t-lg">
+                <h3 className="font-title-sm text-title-sm text-on-surface">Event Log</h3>
+                <span className="material-symbols-outlined text-on-surface-variant text-sm">receipt_long</span>
+              </div>
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-stack-sm">
               <div className="flex flex-col gap-0">
                 {recentEvents.length === 0 && (
                   <div className="px-stack-md py-stack-sm text-on-surface-variant text-xs text-center">
@@ -178,6 +217,7 @@ export default function InventoryPage({ inventory = [], orders = [] }) {
                 )}
               </div>
             </div>
+          </div>
           </div>
           
           {/* SKU Grid (Main Content) */}

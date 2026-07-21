@@ -5,12 +5,15 @@ import { motion, AnimatePresence } from 'framer-motion';
  * Convert backend grid coordinates (21x17) to the new 800x600 SVG space.
  */
 function gridToNewSVG(gx, gy) {
-  // Shift X by -16 so that gx=2,6,10,14,18 (lanes) map perfectly to 112, 240, 368, 496, 624
-  return [48 + (gx || 0) * 32, 64 + (gy || 0) * 32];
+  // New mapping: aisles at gx=2,6,10,14,18 map to 96, 256, 416, 576, 736.
+  // Formula: gx * 40 + 16
+  return [gx * 40 + 16, 64 + (gy || 0) * 32];
 }
 
 function mapBotStatusToColor(status) {
   if (['picking', 'assigned', 'busy'].includes(status)) return 'primary';
+  if (status === 'delivering_to_packing') return 'accent';
+  if (status === 'delivering_to_shipping') return 'warning';
   if (status === 'returning') return 'tertiary';
   if (status === 'charging') return 'secondary';
   return 'secondary';
@@ -20,6 +23,8 @@ function getHexColor(colorStr) {
   if (colorStr === 'primary') return '#adc6ff';
   if (colorStr === 'secondary') return '#53e16f';
   if (colorStr === 'tertiary') return '#ffb874';
+  if (colorStr === 'accent') return '#e879f9';
+  if (colorStr === 'warning') return '#fde047';
   if (colorStr === 'error') return '#ffb4ab';
   return '#c1c6d7'; // default
 }
@@ -55,8 +60,8 @@ function DynamicBot({ bot, position, onClick }) {
 
 export default function WarehouseFloorPage({ bots = [], botPositions = {}, orders = [], onBotClick }) {
   const [zoom, setZoom] = useState(1);
-  const mapWidth = 800;
-  const mapHeight = 620;
+  const mapWidth = 900;
+  const mapHeight = 660;
   const viewBoxWidth = mapWidth / zoom;
   const viewBoxHeight = mapHeight / zoom;
   const viewBoxX = (mapWidth - viewBoxWidth) / 2;
@@ -152,63 +157,55 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
               <rect fill="url(#grid)" height="100%" width="100%" x={viewBoxX} y={viewBoxY}></rect>
               
               {/* Zones */}
-              <rect className="zone-border" fill="none" height="48" stroke="#8b90a0" width="448" x="144" y="16"></rect>
-              <text className="zone-text" fill="#c1c6d7" fontSize="12" textAnchor="middle" x="368" y="44">INBOUND / RECEIVING</text>
-              <path d="M 368 64 L 368 74" markerEnd="url(#arrow-bot1)" stroke="#8b90a0" strokeWidth="2"></path>
+              <rect className="zone-border" fill="none" height="48" stroke="#8b90a0" width="544" x="144" y="16"></rect>
+              <text className="zone-text" fill="#c1c6d7" fontSize="12" textAnchor="middle" x="416" y="44">INBOUND / RECEIVING</text>
+              <path d="M 416 64 L 416 74" markerEnd="url(#arrow-bot1)" stroke="#8b90a0" strokeWidth="2"></path>
               
-              <rect className="zone-border" fill="none" height="60" stroke="#ffb874" width="300" x="218" y="540"></rect>
-              <text className="zone-text" fill="#ffb874" fontSize="12" textAnchor="middle" x="368" y="560">PACKING STATION</text>
-              <rect fill="#31353d" height="20" rx="2" stroke="#ffb874" strokeWidth="1" width="40" x="298" y="570"></rect>
-              <text fill="#ffb874" fontFamily="Inter" fontSize="8" textAnchor="middle" x="318" y="581">P1</text>
-              <rect fill="#31353d" height="20" rx="2" stroke="#ffb874" strokeWidth="1" width="40" x="398" y="570"></rect>
-              <text fill="#ffb874" fontFamily="Inter" fontSize="8" textAnchor="middle" x="418" y="581">P2</text>
+              <rect className="zone-border" fill="none" height="60" stroke="#ffb874" width="300" x="266" y="572"></rect>
+              <text className="zone-text" fill="#ffb874" fontSize="12" textAnchor="middle" x="416" y="592">PACKING STATION</text>
+              <rect fill="#31353d" height="20" rx="2" stroke="#ffb874" strokeWidth="1" width="40" x="346" y="602"></rect>
+              <text fill="#ffb874" fontFamily="Inter" fontSize="8" textAnchor="middle" x="366" y="613">P1</text>
+              <rect fill="#31353d" height="20" rx="2" stroke="#ffb874" strokeWidth="1" width="40" x="446" y="602"></rect>
+              <text fill="#ffb874" fontFamily="Inter" fontSize="8" textAnchor="middle" x="466" y="613">P2</text>
               
-              <rect className="zone-border" fill="none" height="80" stroke="#adc6ff" width="140" x="630" y="500"></rect>
-              <text className="zone-text" fill="#adc6ff" fontSize="12" textAnchor="middle" x="700" y="525">SHIPPING AREA</text>
-              <path d="M 670 550 L 690 550 L 690 540 L 710 540 L 710 560 L 660 560 Z" fill="none" stroke="#adc6ff" strokeWidth="2"></path>
-              <circle cx="675" cy="565" fill="#adc6ff" r="4"></circle>
-              <circle cx="700" cy="565" fill="#adc6ff" r="4"></circle>
+              <rect className="zone-border" fill="none" height="60" stroke="#adc6ff" width="140" x="740" y="572"></rect>
+              <text className="zone-text" fill="#adc6ff" fontSize="12" textAnchor="middle" x="810" y="592">SHIPPING AREA</text>
+              <path d="M 795 607 L 815 607 L 815 597 L 835 597 L 835 617 L 785 617 Z" fill="none" stroke="#adc6ff" strokeWidth="2"></path>
+              <circle cx="800" cy="622" fill="#adc6ff" r="4"></circle>
+              <circle cx="825" cy="622" fill="#adc6ff" r="4"></circle>
               
               {/* Racks */}
               {/* Aisle A (x=144) */}
               <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="144" y="144"></rect>
               <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="176" y="180">A1</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="144" y="240"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="176" y="276">A2</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="144" y="336"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="176" y="372">A3</text>
+              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="144" y="288"></rect>
+              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="176" y="324">A2</text>
               <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="144" y="432"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="176" y="468">A4</text>
+              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="176" y="468">A3</text>
               
-              {/* Aisle B (x=272) */}
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="272" y="144"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="304" y="180">B1</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="272" y="240"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="304" y="276">B2</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="272" y="336"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="304" y="372">B3</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="272" y="432"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="304" y="468">B4</text>
+              {/* Aisle B (x=304) */}
+              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="304" y="144"></rect>
+              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="336" y="180">B1</text>
+              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="304" y="288"></rect>
+              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="336" y="324">B2</text>
+              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="304" y="432"></rect>
+              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="336" y="468">B3</text>
               
-              {/* Aisle C (x=400) */}
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="400" y="144"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="432" y="180">C1</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="400" y="240"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="432" y="276">C2</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="400" y="336"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="432" y="372">C3</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="400" y="432"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="432" y="468">C4</text>
+              {/* Aisle C (x=464) */}
+              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="464" y="144"></rect>
+              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="496" y="180">C1</text>
+              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="464" y="288"></rect>
+              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="496" y="324">C2</text>
+              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="464" y="432"></rect>
+              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="496" y="468">C3</text>
               
-              {/* Aisle D (x=528) */}
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="528" y="144"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="560" y="180">D1</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="528" y="240"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="560" y="276">D2</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="528" y="336"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="560" y="372">D3</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="528" y="432"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="560" y="468">D4</text>
+              {/* Aisle D (x=624) */}
+              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="624" y="144"></rect>
+              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="656" y="180">D1</text>
+              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="624" y="288"></rect>
+              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="656" y="324">D2</text>
+              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="624" y="432"></rect>
+              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="656" y="468">D3</text>
               
               {/* Dynamic Bots */}
               <AnimatePresence>
@@ -290,10 +287,19 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
             <h2 className="text-xs font-bold text-on-surface-variant tracking-wider mb-4 uppercase">Bot Status</h2>
             <div className="space-y-4">
               {displayBots.map(bot => {
-                const isActive = ['picking', 'assigned', 'busy'].includes(bot.status);
-                const isReturning = bot.status === 'returning';
-                const colorToken = isActive ? 'primary' : isReturning ? 'tertiary' : 'secondary';
-                const pct = isActive ? 72 : isReturning ? 45 : 100;
+                const liveStatus = botPositions[bot.id]?.status || bot.status;
+                const isActive = ['picking', 'assigned', 'busy'].includes(liveStatus);
+                const isDeliveringPacking = liveStatus === 'delivering_to_packing';
+                const isDeliveringShipping = liveStatus === 'delivering_to_shipping';
+                const isReturning = liveStatus === 'returning';
+                
+                let colorToken = 'secondary';
+                if (isActive) colorToken = 'primary';
+                else if (isDeliveringPacking) colorToken = 'accent';
+                else if (isDeliveringShipping) colorToken = 'warning';
+                else if (isReturning) colorToken = 'tertiary';
+
+                const pct = (isActive || isDeliveringPacking || isDeliveringShipping) ? 72 : isReturning ? 45 : 100;
                 
                 return (
                   <div key={bot.id}>
@@ -304,7 +310,7 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
                         </div>
                         <div>
                           <div className={`font-medium text-${colorToken}`}>{bot.bot_code}</div>
-                          <div className="text-xs text-on-surface-variant capitalize">{bot.status?.replace(/_/g, ' ')}</div>
+                          <div className="text-xs text-on-surface-variant capitalize">{liveStatus?.replace(/_/g, ' ')}</div>
                         </div>
                       </div>
                       <div className="text-sm font-medium text-on-surface">{pct}%</div>

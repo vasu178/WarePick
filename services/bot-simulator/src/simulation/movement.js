@@ -14,20 +14,38 @@ const SERVICE_NAME = 'bot-simulator';
 
 const supabase = createServiceClient();
 
-/**
- * Calculate path from (x1,y1) to (x2,y2) as a sequence of grid steps.
- * Simple straight-line movement: move X first, then Y.
- */
 function calculatePath(fromX, fromY, toX, toY) {
   const steps = [];
   let cx = fromX, cy = fromY;
 
-  // Move horizontally
+  // If already in the correct vertical aisle, just move vertically
+  if (cx === toX) {
+    while (cy !== toY) {
+      cy += cy < toY ? 1 : -1;
+      steps.push({ x: cx, y: cy });
+    }
+    return steps;
+  }
+
+  // We need to change aisles, so move via a horizontal highway to avoid shelves.
+  // Highways are y = 1 (dock) and y = 14 (above packing station)
+  const distToTop = Math.abs(cy - 1) + Math.abs(toY - 1);
+  const distToBottom = Math.abs(cy - 14) + Math.abs(toY - 14);
+  const highwayY = distToTop < distToBottom ? 1 : 14;
+
+  // Step 1: Move vertically to highway
+  while (cy !== highwayY) {
+    cy += cy < highwayY ? 1 : -1;
+    steps.push({ x: cx, y: cy });
+  }
+
+  // Step 2: Move horizontally along highway to destination aisle
   while (cx !== toX) {
     cx += cx < toX ? 1 : -1;
     steps.push({ x: cx, y: cy });
   }
-  // Move vertically
+
+  // Step 3: Move vertically down the aisle to destination
   while (cy !== toY) {
     cy += cy < toY ? 1 : -1;
     steps.push({ x: cx, y: cy });
@@ -148,10 +166,25 @@ async function simulatePicking(bot, shelfCodes, taskId, channel) {
   // 2. Move to packing zone
   const pathToPacking = calculatePath(currentX, currentY, PACKING_POSITION.x, PACKING_POSITION.y);
   if (pathToPacking.length > 0) {
-    const finalPos = await moveAlongPath(bot, pathToPacking, 'picking', broadcastChannel);
+    const finalPos = await moveAlongPath(bot, pathToPacking, 'delivering_to_packing', broadcastChannel);
     currentX = finalPos.x;
     currentY = finalPos.y;
   }
+
+  // Brief pause at packing (simulating drop-off)
+  await new Promise((r) => setTimeout(r, 1000));
+
+  // 3. Move to shipping area
+  const SHIPPING_POSITION = { x: 20, y: 15 };
+  const pathToShipping = calculatePath(currentX, currentY, SHIPPING_POSITION.x, SHIPPING_POSITION.y);
+  if (pathToShipping.length > 0) {
+    const finalPos = await moveAlongPath(bot, pathToShipping, 'delivering_to_shipping', broadcastChannel);
+    currentX = finalPos.x;
+    currentY = finalPos.y;
+  }
+
+  // Brief pause at shipping (simulating dispatch)
+  await new Promise((r) => setTimeout(r, 1000));
 
   // Update order to picked and task to completed
   await supabase.from('tasks').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', taskId);

@@ -6,7 +6,7 @@ import { supabase, API_BASE } from '../lib/supabase';
  * Returns current data and updates automatically on INSERT/UPDATE/DELETE.
  */
 export function useRealtimeTable(tableName, options = {}) {
-  const { select = '*', orderBy = 'created_at', ascending = false, limit = 100, filter } = options;
+  const { select = '*', orderBy = 'created_at', ascending = false, limit = 100, filter, pk = 'id' } = options;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,9 +30,9 @@ export function useRealtimeTable(tableName, options = {}) {
           if (payload.eventType === 'INSERT') {
             if (select !== '*') {
               setTimeout(() => {
-                supabase.from(tableName).select(select).eq('id', payload.new.id).single().then(({ data }) => {
+                supabase.from(tableName).select(select).eq(pk, payload.new[pk]).single().then(({ data }) => {
                   if (data) {
-                    setData((current) => current.map((r) => (r.id === data.id ? data : r)));
+                    setData((current) => current.map((r) => (r[pk] === data[pk] ? data : r)));
                   }
                 });
               }, 500);
@@ -40,10 +40,10 @@ export function useRealtimeTable(tableName, options = {}) {
             return [payload.new, ...prev].slice(0, limit);
           }
           if (payload.eventType === 'UPDATE') {
-            return prev.map((row) => (row.id === payload.new.id ? { ...row, ...payload.new } : row));
+            return prev.map((row) => (row[pk] === payload.new[pk] ? { ...row, ...payload.new } : row));
           }
           if (payload.eventType === 'DELETE') {
-            return prev.filter((row) => row.id !== payload.old.id);
+            return prev.filter((row) => row[pk] !== payload.old[pk]);
           }
           return prev;
         });

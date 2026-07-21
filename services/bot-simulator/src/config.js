@@ -15,13 +15,13 @@ module.exports = {
   // Shelf code → grid coordinate mapping
   SHELF_POSITIONS: {
     'A1': { x: 2, y: 3 },
-    'A2': { x: 2, y: 6 },
+    'A2': { x: 2, y: 8 },
     'B1': { x: 6, y: 3 },
-    'B2': { x: 6, y: 6 },
+    'B2': { x: 6, y: 8 },
     'C1': { x: 10, y: 3 },
-    'C2': { x: 10, y: 6 },
+    'C2': { x: 10, y: 8 },
   },
 
   // Packing zone position (bot goes here after picking)
-  PACKING_POSITION: { x: 7, y: 15 },
+  PACKING_POSITION: { x: 10, y: 15 },
 };

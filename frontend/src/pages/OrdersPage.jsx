@@ -18,7 +18,7 @@ const DEMO_SKUS = [
 export default function OrdersPage({ orders = [] }) {
   const { createDemoOrder, createBatchOrders, createOrder, resetSystem, loading } = useOrderAPI();
   const [form, setForm] = useState({
-    sku: 'SKU-8921',
+    sku: DEMO_SKUS[0].sku,
     quantity: 1,
     priority: 'normal',
     customerName: '',

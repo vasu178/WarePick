@@ -24,8 +24,8 @@ export default function App() {
 
   // Real-time data from Supabase CDC
   const { data: orders } = useRealtimeTable('orders', { select: '*, items:order_items(*)', orderBy: 'created_at', ascending: false, limit: 50 });
-  const { data: bots } = useRealtimeTable('bots', { orderBy: 'bot_code', ascending: true });
-  const { data: inventory } = useRealtimeTable('inventory', { orderBy: 'sku', ascending: true });
+  const { data: bots } = useRealtimeTable('bots', { orderBy: 'bot_code', ascending: true, pk: 'bot_code' });
+  const { data: inventory } = useRealtimeTable('inventory', { orderBy: 'sku', ascending: true, pk: 'sku' });
 
   // Broadcast bot positions (ephemeral, high-frequency)
   const { lastMessage: lastBotPos } = useBroadcast('warehouse-floor', 'bot.position_updated');
