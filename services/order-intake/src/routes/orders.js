@@ -269,4 +269,53 @@ router.post('/reset', async (req, res) => {
   }
 });
 
+/**
+ * POST /orders/:id/reattempt — Reattempt a failed order
+ */
+router.post('/:id/reattempt', async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    
+    // 1. Fetch the order and items
+    const { data: order, error: fetchError } = await supabase
+      .from('orders')
+      .select('*, items:order_items(*)')
+      .eq('id', orderId)
+      .single();
+      
+    if (fetchError || !order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // 2. Update status back to created
+    const { error: updateError } = await supabase
+      .from('orders')
+      .update({ status: STATUSES.CREATED, updated_at: new Date().toISOString() })
+      .eq('id', orderId);
+
+    if (updateError) {
+      throw new Error(`Failed to update order status: ${updateError.message}`);
+    }
+
+    // 3. Re-publish the created event to trigger downstream services
+    if (rabbitChannel) {
+      publish(rabbitChannel, EVENTS.ORDER_CREATED, {
+        eventName: EVENTS.ORDER_CREATED,
+        orderId: order.id,
+        customerName: order.customer_name,
+        destination: order.destination,
+        priority: order.priority,
+        items: order.items,
+        createdAt: order.created_at,
+      });
+      console.log(`📦 [${SERVICE_NAME}] Re-published order.created for ${order.id}`);
+    }
+
+    res.json({ message: 'Order reattempted', orderId: order.id });
+  } catch (err) {
+    console.error(`❌ [${SERVICE_NAME}] POST /orders/:id/reattempt error:`, err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
