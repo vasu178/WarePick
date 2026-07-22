@@ -22,7 +22,7 @@ export default function ProductsPage({ inventory = [] }) {
           <div className="relative">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
             <input 
-              className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-lg text-on-surface text-body-md font-body-md pl-10 pr-4 py-2 w-full sm:w-64 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
+              className="bg-surface-container/30 backdrop-blur-md border border-white/10 shadow-inner rounded-lg text-on-surface text-body-md font-body-md pl-10 pr-4 py-2 w-full sm:w-64 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
               placeholder="Search product or SKU..." 
               type="text"
               value={searchTerm}
@@ -44,14 +44,14 @@ export default function ProductsPage({ inventory = [] }) {
             if (item.product_name?.toLowerCase().includes('headset')) iconName = 'headphones';
             
             return (
-              <div key={item.sku} className="bg-[#1C1C1E] border border-[#2C2C2E] hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/10 rounded-lg p-container-padding flex flex-col gap-stack-sm cursor-default shadow-sm">
+              <div key={item.sku} className="bg-surface/40 backdrop-blur-md border border-white/10 hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_0_25px_rgba(173,198,255,0.15)] rounded-lg p-container-padding flex flex-col gap-stack-sm cursor-default shadow-xl">
                 <div className="flex justify-between items-start">
-                  <div className={`w-12 h-12 rounded-lg bg-surface-bright border flex items-center justify-center shrink-0 ${isLow ? 'border-error/50 bg-error/5' : 'border-[#2C2C2E]'}`}>
+                  <div className={`w-12 h-12 rounded-lg bg-surface-container/50 border flex items-center justify-center shrink-0 ${isLow ? 'border-error/50 bg-error/5 shadow-[0_0_15px_rgba(255,180,171,0.15)]' : 'border-white/10'}`}>
                     <span className={`material-symbols-outlined text-2xl ${isLow ? 'text-error' : 'text-primary'}`}>{iconName}</span>
                   </div>
                   <div className="flex flex-col items-end">
                     <span className="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider">Location</span>
-                    <span className="font-data-mono font-bold text-lg text-on-surface bg-surface-container px-2 py-1 rounded mt-1 border border-outline-variant/30 shadow-inner tracking-wide">{item.zone || 'Z1-R1'}</span>
+                    <span className="font-data-mono font-bold text-lg text-on-surface bg-surface-container/50 backdrop-blur-sm px-2 py-1 rounded mt-1 border border-white/10 shadow-inner tracking-wide">{item.zone || 'Z1-R1'}</span>
                   </div>
                 </div>
                 
@@ -62,7 +62,7 @@ export default function ProductsPage({ inventory = [] }) {
                   </div>
                 </div>
                 
-                <div className="h-px bg-[#2C2C2E] my-unit w-full"></div>
+                <div className="h-px bg-white/10 my-unit w-full"></div>
                 
                 <div className="flex justify-between items-center mt-auto">
                    <div className="flex flex-col">

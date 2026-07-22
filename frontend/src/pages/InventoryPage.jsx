@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import GlassSelect from '../components/ui/GlassSelect';
 
 /**
  * InventoryPage — Inventory monitor with KPIs, SKU directory, and event log.
@@ -95,7 +96,7 @@ export default function InventoryPage({ inventory = [], orders = [] }) {
           <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-gutter">
             
             {/* Total Units */}
-            <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-lg p-container-padding flex flex-col justify-between">
+            <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-lg p-container-padding flex flex-col justify-between">
               <div className="flex justify-between items-start">
                 <span className="font-label-caps text-label-caps text-on-surface-variant uppercase">Total Units</span>
                 <span className="material-symbols-outlined text-on-surface-variant text-sm">inventory</span>
@@ -106,7 +107,7 @@ export default function InventoryPage({ inventory = [], orders = [] }) {
             </div>
             
             {/* Low Stock Alert */}
-            <div className="bg-[#1C1C1E] border border-error rounded-lg p-container-padding flex flex-col justify-between relative overflow-hidden">
+            <div className="bg-surface/40 backdrop-blur-md border border-error/50 shadow-[0_0_20px_rgba(255,180,171,0.15)] rounded-lg p-container-padding flex flex-col justify-between relative overflow-hidden">
               <div className="absolute right-0 top-0 w-32 h-32 bg-error opacity-5 rounded-bl-full blur-xl"></div>
               <div className="flex justify-between items-start relative z-10">
                 <span className="font-label-caps text-label-caps text-error uppercase flex items-center gap-unit">
@@ -122,7 +123,7 @@ export default function InventoryPage({ inventory = [], orders = [] }) {
             </div>
             
             {/* Active Reservations */}
-            <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-lg p-container-padding flex flex-col justify-between">
+            <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-lg p-container-padding flex flex-col justify-between">
               <div className="flex justify-between items-start">
                 <span className="font-label-caps text-label-caps text-on-surface-variant uppercase flex items-center gap-unit">
                   <div className="w-1.5 h-1.5 bg-primary rounded-full pulse-dot"></div>
@@ -141,24 +142,22 @@ export default function InventoryPage({ inventory = [], orders = [] }) {
           <div className="lg:col-span-4 flex flex-col gap-gutter h-[600px] lg:row-span-2">
             
             {/* Quick Restock Side Feature */}
-            <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-lg shrink-0">
-              <div className="p-container-padding border-b border-[#2C2C2E] flex justify-between items-center bg-[#222428] rounded-t-lg">
+            <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-lg shrink-0 relative z-20">
+              <div className="p-container-padding border-b border-white/10 flex justify-between items-center bg-surface-container/30 backdrop-blur-md rounded-t-lg">
                 <h3 className="font-title-sm text-title-sm text-on-surface">Quick Restock</h3>
                 <span className="material-symbols-outlined text-on-surface-variant text-sm">add_box</span>
               </div>
               <div className="p-container-padding flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Select Product</label>
-                  <select 
+                  <GlassSelect 
                     value={selectedSku}
-                    onChange={e => setSelectedSku(e.target.value)}
-                    className="bg-[#1C1C1E] border border-outline-variant rounded px-3 py-2 text-on-surface text-sm outline-none focus:border-primary"
-                  >
-                    <option value="ALL">All Products</option>
-                    {inventory.map(item => (
-                      <option key={item.sku} value={item.sku}>{item.product_name} ({item.sku})</option>
-                    ))}
-                  </select>
+                    onChange={val => setSelectedSku(val)}
+                    options={[
+                      { value: 'ALL', label: 'All Products' },
+                      ...inventory.map(item => ({ value: item.sku, label: `${item.product_name} (${item.sku})` }))
+                    ]}
+                  />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Units to Add</label>
@@ -172,7 +171,7 @@ export default function InventoryPage({ inventory = [], orders = [] }) {
                 <button 
                   onClick={submitAddStock} 
                   disabled={restocking || stockToAdd <= 0} 
-                  className={`w-full py-2 bg-primary text-on-primary rounded font-bold hover:bg-primary-fixed-dim transition-colors text-sm ${(restocking || stockToAdd <= 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`w-full bg-primary/20 border border-primary/50 text-primary font-label-caps text-label-caps py-2.5 px-4 rounded hover:bg-primary hover:text-on-primary transition-colors flex items-center justify-center gap-2 font-bold uppercase tracking-wider shadow-[0_0_15px_rgba(173,198,255,0.2)] ${(restocking || stockToAdd <= 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {restocking ? 'Adding...' : 'Add Stock'}
                 </button>
@@ -180,8 +179,8 @@ export default function InventoryPage({ inventory = [], orders = [] }) {
             </div>
 
             {/* Real-time Event Log */}
-            <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-lg flex flex-col flex-1 min-h-0">
-              <div className="p-container-padding border-b border-[#2C2C2E] flex justify-between items-center bg-[#222428] rounded-t-lg">
+            <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-lg flex flex-col flex-1 min-h-0">
+              <div className="p-container-padding border-b border-white/10 flex justify-between items-center bg-surface-container/30 backdrop-blur-md rounded-t-lg">
                 <h3 className="font-title-sm text-title-sm text-on-surface">Event Log</h3>
                 <span className="material-symbols-outlined text-on-surface-variant text-sm">receipt_long</span>
               </div>
@@ -221,8 +220,8 @@ export default function InventoryPage({ inventory = [], orders = [] }) {
           </div>
           
           {/* SKU Grid (Main Content) */}
-          <div className="lg:col-span-8 bg-[#1C1C1E] border border-[#2C2C2E] rounded-lg overflow-hidden flex flex-col">
-            <div className="p-container-padding border-b border-[#2C2C2E] flex justify-between items-center bg-[#222428]">
+          <div className="lg:col-span-8 bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-lg overflow-hidden flex flex-col">
+            <div className="p-container-padding border-b border-white/10 flex justify-between items-center bg-surface-container/30 backdrop-blur-md">
               <h3 className="font-title-sm text-title-sm text-on-surface">SKU Directory</h3>
               <div className="flex gap-stack-sm">
                 <button className="p-1 text-on-surface-variant hover:text-primary transition-colors"><span className="material-symbols-outlined text-sm">filter_list</span></button>

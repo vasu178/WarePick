@@ -48,10 +48,10 @@ export default function AnalyticsPage({ bots = [] }) {
       <div className="flex justify-between items-end mb-stack-lg shrink-0">
         <h1 className="font-headline-md text-headline-md text-primary">System Analytics</h1>
         <div className="flex gap-2">
-          <button className="bg-surface-container-high border border-outline-variant text-on-surface px-4 py-2 rounded-DEFAULT font-label-caps text-label-caps uppercase hover:bg-surface-variant transition-colors">Last 24 Hours</button>
+          <button className="bg-surface-container-high/40 backdrop-blur-md border border-white/10 text-on-surface px-4 py-2 rounded-DEFAULT font-label-caps text-label-caps uppercase hover:bg-surface-variant transition-colors shadow-sm">Last 24 Hours</button>
           <button 
             onClick={handleExportReport}
-            className="bg-primary text-on-primary px-4 py-2 rounded-DEFAULT font-label-caps text-label-caps uppercase hover:opacity-90 transition-opacity flex items-center gap-2"
+            className="bg-primary/20 border border-primary/50 text-primary px-4 py-2 rounded-DEFAULT font-label-caps text-label-caps uppercase hover:bg-primary hover:text-on-primary transition-colors shadow-[0_0_15px_rgba(173,198,255,0.2)] flex items-center gap-2"
           >
             <span className="material-symbols-outlined text-[16px]">download</span> Export Report
           </button>
@@ -60,7 +60,7 @@ export default function AnalyticsPage({ bots = [] }) {
       
       {/* KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-stack-lg shrink-0">
-        <div className="bg-[#1C1C1E] border border-[#2C2C2E] p-container-padding rounded-lg relative overflow-hidden group hover:border-outline-variant transition-colors">
+        <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl p-container-padding rounded-lg relative overflow-hidden group hover:border-white/30 transition-colors">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-[6px] h-[6px] rounded-full bg-secondary animate-pulse"></div>
             <h3 className="font-label-caps text-label-caps text-on-surface-variant uppercase">Total Orders</h3>
@@ -77,7 +77,7 @@ export default function AnalyticsPage({ bots = [] }) {
           </div>
         </div>
         
-        <div className="bg-[#1C1C1E] border border-[#2C2C2E] p-container-padding rounded-lg relative overflow-hidden group hover:border-outline-variant transition-colors">
+        <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl p-container-padding rounded-lg relative overflow-hidden group hover:border-white/30 transition-colors">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-[6px] h-[6px] rounded-full bg-primary animate-pulse"></div>
             <h3 className="font-label-caps text-label-caps text-on-surface-variant uppercase">Shipped</h3>
@@ -89,7 +89,7 @@ export default function AnalyticsPage({ bots = [] }) {
           </div>
         </div>
         
-        <div className="bg-[#1C1C1E] border border-[#2C2C2E] p-container-padding rounded-lg relative overflow-hidden group hover:border-error-container transition-colors">
+        <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl p-container-padding rounded-lg relative overflow-hidden group hover:border-error/50 hover:shadow-[0_0_20px_rgba(255,180,171,0.15)] transition-all">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-[6px] h-[6px] rounded-full bg-error"></div>
             <h3 className="font-label-caps text-label-caps text-on-surface-variant uppercase">Failed</h3>
@@ -101,7 +101,7 @@ export default function AnalyticsPage({ bots = [] }) {
           </div>
         </div>
         
-        <div className="bg-[#1C1C1E] border border-[#2C2C2E] p-container-padding rounded-lg relative overflow-hidden group hover:border-outline-variant transition-colors">
+        <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl p-container-padding rounded-lg relative overflow-hidden group hover:border-white/30 transition-colors">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-[6px] h-[6px] rounded-full bg-tertiary"></div>
             <h3 className="font-label-caps text-label-caps text-on-surface-variant uppercase">Avg. Fulfillment</h3>
@@ -117,7 +117,7 @@ export default function AnalyticsPage({ bots = [] }) {
       {/* Middle Section: Bot Util & Microservices */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter mb-stack-lg shrink-0">
         {/* Bot Utilization */}
-        <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-lg p-container-padding col-span-1 flex flex-col">
+        <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-lg p-container-padding col-span-1 flex flex-col">
           <h3 className="font-title-sm text-title-sm text-primary mb-4 flex items-center gap-2">
             <span className="material-symbols-outlined">smart_toy</span> Bot Utilization
           </h3>
@@ -152,7 +152,7 @@ export default function AnalyticsPage({ bots = [] }) {
               </div>
             </div>
             
-            <div className="mt-4 pt-4 border-t border-[#2C2C2E] flex justify-between items-center">
+            <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
               <span className="font-label-caps text-label-caps text-on-surface-variant uppercase">Active Bots</span>
               <span className="font-data-mono text-title-sm text-on-surface">{activeBots.length} / {bots.length || 0}</span>
             </div>
@@ -160,13 +160,13 @@ export default function AnalyticsPage({ bots = [] }) {
         </div>
         
         {/* Microservice Pulse */}
-        <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-lg p-container-padding col-span-1 lg:col-span-2">
+        <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-lg p-container-padding col-span-1 lg:col-span-2">
           <h3 className="font-title-sm text-title-sm text-primary mb-4 flex items-center gap-2">
             <span className="material-symbols-outlined">hub</span> Microservice Pulse
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
             {SERVICES.map((svc) => (
-              <div key={svc.name} className={`bg-surface-container border p-3 rounded-DEFAULT ${svc.status === 'error' ? 'border-error/50' : svc.status === 'warn' ? 'border-tertiary/50' : 'border-[#2C2C2E]'}`}>
+              <div key={svc.name} className={`bg-surface-container/30 backdrop-blur-md border p-3 rounded-DEFAULT ${svc.status === 'error' ? 'border-error/50 shadow-[0_0_15px_rgba(255,180,171,0.15)]' : svc.status === 'warn' ? 'border-tertiary/50 shadow-[0_0_15px_rgba(255,184,116,0.15)]' : 'border-white/10'}`}>
                 <div className="flex justify-between items-start mb-2">
                   <span className="font-label-caps text-label-caps text-on-surface uppercase truncate">{svc.name}</span>
                   <div className={`w-2 h-2 rounded-full ${svc.status === 'error' ? 'bg-error animate-pulse' : svc.status === 'warn' ? 'bg-tertiary' : 'bg-secondary'}`}></div>
@@ -180,8 +180,8 @@ export default function AnalyticsPage({ bots = [] }) {
       </div>
       
       {/* Detailed Event Feed */}
-      <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-lg p-container-padding flex flex-col flex-1 min-h-[300px]">
-        <div className="flex justify-between items-center mb-4 border-b border-[#2C2C2E] pb-4">
+      <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-lg p-container-padding flex flex-col flex-1 min-h-[300px]">
+        <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
           <h3 className="font-title-sm text-title-sm text-primary flex items-center gap-2">
             <span className="material-symbols-outlined">receipt_long</span> Raw Event Feed
           </h3>

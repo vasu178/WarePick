@@ -78,8 +78,8 @@ export default function FailedOrdersPage() {
         </div>
       </header>
 
-      <section className="bg-surface-container rounded-lg border border-outline-variant flex-1 flex flex-col overflow-hidden shadow-[0_4px_24px_-8px_rgba(0,0,0,0.5)] min-h-0">
-        <div className="p-container-padding border-b border-outline-variant flex justify-between items-center bg-surface-container-high z-10">
+      <section className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-lg flex-1 flex flex-col overflow-hidden min-h-0">
+        <div className="p-container-padding border-b border-white/10 flex justify-between items-center bg-surface-container/30 backdrop-blur-md z-10">
           <h2 className="font-title-sm text-title-sm text-on-surface">Queue</h2>
         </div>
         
@@ -127,7 +127,7 @@ export default function FailedOrdersPage() {
                   <div className="shrink-0 ml-4 flex gap-2">
                     <button
                       onClick={() => handleRemove(order.id)}
-                      className="bg-error/10 text-error border border-error/30 hover:bg-error hover:text-on-error font-label-caps text-label-caps py-2 px-4 rounded transition-colors flex items-center justify-center gap-2 uppercase"
+                      className="bg-error/10 text-error border border-error/50 hover:bg-error hover:text-on-error font-label-caps text-label-caps py-2 px-4 rounded transition-colors flex items-center justify-center gap-2 uppercase shadow-[0_0_15px_rgba(255,180,171,0.15)]"
                     >
                       <span className="material-symbols-outlined text-[18px]">delete</span>
                       Remove
@@ -135,7 +135,7 @@ export default function FailedOrdersPage() {
                     <button
                       onClick={() => handleReattempt(order.id)}
                       disabled={retryingId === order.id}
-                      className="bg-primary/20 text-primary border border-primary/50 hover:bg-primary hover:text-on-primary font-label-caps text-label-caps py-2 px-4 rounded transition-colors flex items-center justify-center gap-2 uppercase disabled:opacity-50"
+                      className="bg-primary/20 text-primary border border-primary/50 hover:bg-primary hover:text-on-primary font-label-caps text-label-caps py-2 px-4 rounded transition-colors flex items-center justify-center gap-2 uppercase disabled:opacity-50 shadow-[0_0_15px_rgba(173,198,255,0.2)]"
                     >
                       {retryingId === order.id ? (
                         <span className="material-symbols-outlined text-[18px] animate-spin">refresh</span>

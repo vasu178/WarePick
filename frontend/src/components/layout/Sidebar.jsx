@@ -1,6 +1,6 @@
 export default function Sidebar({ activePage, onNavigate }) {
   return (
-    <nav className="hidden md:flex fixed left-0 top-16 bottom-8 w-64 z-40 flex-col py-stack-md bg-surface-container border-r border-outline-variant">
+    <nav className="hidden md:flex fixed left-0 top-16 bottom-8 w-64 z-40 flex-col py-stack-md bg-surface-container/30 backdrop-blur-md border-r border-white/10 shadow-lg">
       <div className="px-margin mb-stack-lg">
         <h2 className="font-headline-md text-headline-md text-primary">System Control</h2>
         <p className="font-label-caps text-label-caps text-on-surface-variant mt-unit">V2.4 Active</p>
@@ -73,7 +73,7 @@ export default function Sidebar({ activePage, onNavigate }) {
           <span className="text-error">Failed Orders</span>
         </a>
       </div>
-      <div className="px-margin mt-auto flex items-center gap-stack-sm pt-stack-md border-t border-outline-variant">
+      <div className="px-margin mt-auto flex items-center gap-stack-sm pt-stack-md border-t border-white/10">
         <img 
           alt="User Profile" 
           className="w-8 h-8 rounded-full object-cover border border-outline-variant" 

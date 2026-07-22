@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAnalytics } from '../hooks/useWarePick';
+import WarehouseCanvas from '../components/3d/WarehouseCanvas';
 
 /**
  * Convert backend grid coordinates (21x17) to the new 800x600 SVG space.
@@ -166,9 +167,9 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
   ];
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden relative w-full h-full bg-background">
+    <div className="flex-1 flex flex-col overflow-hidden relative w-full h-full bg-transparent">
       {/* Header */}
-      <header className="h-16 flex items-center px-6 border-b border-outline-variant bg-surface-container-high/90 backdrop-blur-sm z-10 shrink-0">
+      <header className="h-16 flex items-center px-6 border-b border-white/10 bg-surface-container-high/30 backdrop-blur-md shadow-sm z-10 shrink-0">
         <button className="mr-4 text-on-surface-variant hover:text-on-surface md:hidden">
           <i className="fa-solid fa-bars text-lg"></i>
         </button>
@@ -184,131 +185,18 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
       <div className="flex-1 p-6 flex flex-col lg:flex-row gap-6 min-h-0">
         {/* Central Map Area */}
         <div className="flex-1 flex flex-col gap-6 min-h-0">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex-1 relative overflow-hidden flex items-center justify-center">
-            
-            {/* Zoom Controls */}
-            <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
-              <button 
-                onClick={() => setZoom(prev => Math.min(prev + 0.2, 3))}
-                className="w-8 h-8 bg-surface border border-outline-variant rounded flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors shadow-sm"
-                title="Zoom In"
-              >
-                <i className="fa-solid fa-plus"></i>
-              </button>
-              <button 
-                onClick={() => setZoom(prev => Math.max(prev - 0.2, 0.5))}
-                className="w-8 h-8 bg-surface border border-outline-variant rounded flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors shadow-sm"
-                title="Zoom Out"
-              >
-                <i className="fa-solid fa-minus"></i>
-              </button>
-              <button 
-                onClick={() => { setZoom(1); setPanX(0); setPanY(0); }}
-                className="w-8 h-8 bg-surface border border-outline-variant rounded flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors shadow-sm text-xs font-semibold"
-                title="Reset Zoom"
-              >
-                1x
-              </button>
-            </div>
-
-            {/* SVG Interactive Map */}
-            <svg
-              className={`w-full h-full transition-all ease-out ${isDragging ? 'cursor-grabbing duration-0' : 'cursor-grab duration-300'}`}
-              viewBox={viewBox}
-              xmlns="http://www.w3.org/2000/svg"
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              onWheel={handleWheel}
-            >
-              <defs>
-                <pattern height="40" id="grid" patternUnits="userSpaceOnUse" width="40">
-                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#414755" strokeWidth="0.5"></path>
-                </pattern>
-                {/* Arrowhead markers for routes */}
-                <marker id="arrow-bot1" markerHeight="6" markerWidth="6" orient="auto-start-reverse" refX="8" refY="5" viewBox="0 0 10 10">
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#adc6ff"></path>
-                </marker>
-                <marker id="arrow-bot2" markerHeight="6" markerWidth="6" orient="auto-start-reverse" refX="8" refY="5" viewBox="0 0 10 10">
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#53e16f"></path>
-                </marker>
-                <marker id="arrow-bot3" markerHeight="6" markerWidth="6" orient="auto-start-reverse" refX="8" refY="5" viewBox="0 0 10 10">
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#ffb874"></path>
-                </marker>
-              </defs>
-              
-              {/* Background Grid */}
-              <rect fill="url(#grid)" height="100%" width="100%" x={viewBoxX} y={viewBoxY}></rect>
-              
-              {/* Zones */}
-              <rect className="zone-border" fill="none" height="48" stroke="#8b90a0" width="544" x="144" y="16"></rect>
-              <text className="zone-text" fill="#c1c6d7" fontSize="12" textAnchor="middle" x="416" y="44">INBOUND / RECEIVING</text>
-              <path d="M 416 64 L 416 74" markerEnd="url(#arrow-bot1)" stroke="#8b90a0" strokeWidth="2"></path>
-              
-              <rect className="zone-border" fill="none" height="60" stroke="#ffb874" width="300" x="266" y="572"></rect>
-              <text className="zone-text" fill="#ffb874" fontSize="12" textAnchor="middle" x="416" y="592">PACKING STATION</text>
-              <rect fill="#31353d" height="20" rx="2" stroke="#ffb874" strokeWidth="1" width="40" x="346" y="602"></rect>
-              <text fill="#ffb874" fontFamily="Inter" fontSize="8" textAnchor="middle" x="366" y="613">P1</text>
-              <rect fill="#31353d" height="20" rx="2" stroke="#ffb874" strokeWidth="1" width="40" x="446" y="602"></rect>
-              <text fill="#ffb874" fontFamily="Inter" fontSize="8" textAnchor="middle" x="466" y="613">P2</text>
-              
-              <rect className="zone-border" fill="none" height="60" stroke="#adc6ff" width="140" x="740" y="572"></rect>
-              <text className="zone-text" fill="#adc6ff" fontSize="12" textAnchor="middle" x="810" y="592">SHIPPING AREA</text>
-              <path d="M 795 607 L 815 607 L 815 597 L 835 597 L 835 617 L 785 617 Z" fill="none" stroke="#adc6ff" strokeWidth="2"></path>
-              <circle cx="800" cy="622" fill="#adc6ff" r="4"></circle>
-              <circle cx="825" cy="622" fill="#adc6ff" r="4"></circle>
-              
-              {/* Racks */}
-              {/* Aisle A (x=144) */}
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="144" y="144"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="176" y="180">A1</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="144" y="288"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="176" y="324">A2</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="144" y="432"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="176" y="468">A3</text>
-              
-              {/* Aisle B (x=304) */}
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="304" y="144"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="336" y="180">B1</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="304" y="288"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="336" y="324">B2</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="304" y="432"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="336" y="468">B3</text>
-              
-              {/* Aisle C (x=464) */}
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="464" y="144"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="496" y="180">C1</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="464" y="288"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="496" y="324">C2</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="464" y="432"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="496" y="468">C3</text>
-              
-              {/* Aisle D (x=624) */}
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="624" y="144"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="656" y="180">D1</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="624" y="288"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="656" y="324">D2</text>
-              <rect className="rack-bg" fill="#363942" height="64" stroke="#414755" width="64" x="624" y="432"></rect>
-              <text className="rack-text" fill="#e0e2ed" fontWeight="bold" textAnchor="middle" x="656" y="468">D3</text>
-              
-              {/* Dynamic Bots */}
-              <AnimatePresence>
-                {bots.map(bot => (
-                  <DynamicBot 
-                    key={bot.id} 
-                    bot={bot} 
-                    position={botPositions[bot.id]} 
-                    onClick={onBotClick}
-                  />
-                ))}
-              </AnimatePresence>
-            </svg>
+          <div className="flex-1 min-h-0 relative w-full overflow-hidden rounded-xl border border-white/10 bg-surface/40 backdrop-blur-md shadow-xl">
+            <WarehouseCanvas
+              bots={bots}
+              botPositions={botPositions}
+              orders={orders}
+              onBotClick={onBotClick}
+            />
           </div>
           
           {/* Bottom Metrics */}
           <div className="grid grid-cols-5 gap-3 shrink-0">
-            <div className="bg-surface border border-outline-variant rounded-xl p-3 flex items-center gap-3">
+            <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-3 flex items-center gap-3">
               <div className="w-8 h-8 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                 <i className="fa-solid fa-clipboard-check"></i>
               </div>
@@ -319,7 +207,7 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
               </div>
             </div>
             
-            <div className="bg-surface border border-outline-variant rounded-xl p-3 flex items-center gap-3">
+            <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-3 flex items-center gap-3">
               <div className="w-8 h-8 shrink-0 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
                 <i className="fa-solid fa-check-circle"></i>
               </div>
@@ -330,7 +218,7 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
               </div>
             </div>
             
-            <div className="bg-surface border border-outline-variant rounded-xl p-3 flex items-center gap-3">
+            <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-3 flex items-center gap-3">
               <div className="w-8 h-8 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                 <i className="fa-solid fa-clock"></i>
               </div>
@@ -341,7 +229,7 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
               </div>
             </div>
             
-            <div className="bg-surface border border-outline-variant rounded-xl p-3 flex items-center gap-3">
+            <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-3 flex items-center gap-3">
               <div className="w-8 h-8 shrink-0 rounded-full bg-error/10 flex items-center justify-center text-error">
                 <i className="fa-solid fa-times-circle"></i>
               </div>
@@ -352,7 +240,7 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
               </div>
             </div>
             
-            <div className="bg-surface border border-outline-variant rounded-xl p-3 flex items-center gap-3">
+            <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-3 flex items-center gap-3">
               <div className="w-8 h-8 shrink-0 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary">
                 <i className="fa-solid fa-stopwatch"></i>
               </div>
@@ -368,7 +256,7 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
         {/* Right Sidebar Area */}
         <div className="w-full lg:w-72 flex flex-col gap-4 shrink-0 min-h-0">
           {/* Bot Status Card */}
-          <div className="bg-surface border border-outline-variant rounded-xl p-4 flex flex-col max-h-[200px]">
+          <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-4 flex flex-col max-h-[200px]">
             <h2 className="text-xs font-bold text-on-surface-variant tracking-wider mb-4 uppercase shrink-0">Bot Status</h2>
             <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar">
               {displayBots.map(bot => {
@@ -409,7 +297,7 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
           </div>
           
           {/* Current Order Card */}
-          <div className="bg-surface border border-outline-variant rounded-xl p-5">
+          <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-5">
             <h2 className="text-xs font-bold text-on-surface-variant tracking-wider mb-4 uppercase">Current Order</h2>
             {activeOrder ? (
               <div className="space-y-3 text-sm">
@@ -440,7 +328,7 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
           </div>
           
           {/* Live Events Card */}
-          <div className="bg-surface border border-outline-variant rounded-xl p-5 flex-1 flex flex-col min-h-[200px]">
+          <div className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-5 flex-1 flex flex-col min-h-[200px]">
             <h2 className="text-xs font-bold text-on-surface-variant tracking-wider mb-4 uppercase">Live Events</h2>
             <div className="space-y-3 overflow-y-auto pr-2 text-xs flex-1 custom-scrollbar">
               {events.map((ev, i) => (

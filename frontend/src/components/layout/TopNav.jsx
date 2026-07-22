@@ -19,7 +19,7 @@ export default function TopNav() {
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin h-16 bg-surface-container-high border-b border-outline-variant">
+    <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin h-16 bg-surface-container-high/40 backdrop-blur-md border-b border-white/10 shadow-sm">
       <div className="flex items-center gap-gutter">
         <div className="flex items-center gap-stack-sm text-primary">
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>widgets</span>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useOrderAPI } from '../hooks/useWarePick';
+import GlassSelect from '../components/ui/GlassSelect';
 
 /**
  * OrdersPage — Order management with create form, demo controls, and live timeline.
@@ -63,7 +64,7 @@ export default function OrdersPage({ orders = [] }) {
         {/* Left Column: Controls (Forms & Demo) */}
         <div className="lg:col-span-5 flex flex-col gap-gutter">
           {/* Create New Order Form */}
-          <section className="bg-surface-container rounded-lg border border-outline-variant p-container-padding shadow-[0_4px_24px_-8px_rgba(0,0,0,0.5)]">
+          <section className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-lg p-container-padding shadow-[0_4px_24px_-8px_rgba(0,0,0,0.5)] relative z-20">
             <div className="flex items-center gap-2 mb-3 border-b border-outline-variant pb-2">
               <span className="material-symbols-outlined text-primary">add_box</span>
               <h2 className="font-title-sm text-title-sm text-on-surface">Create New Order</h2>
@@ -71,15 +72,12 @@ export default function OrdersPage({ orders = [] }) {
             <div className="space-y-3">
               <div>
                 <label className="block font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase">SKU Selection</label>
-                <div className="relative">
-                  <select 
+                <div className="relative z-20">
+                  <GlassSelect
                     value={form.sku}
-                    onChange={(e) => setForm(prev => ({ ...prev, sku: e.target.value }))}
-                    className="w-full bg-[#0F0F10] border border-outline-variant rounded p-2 text-data-mono font-data-mono text-on-surface focus:outline-none focus:border-primary appearance-none transition-colors"
-                  >
-                    {DEMO_SKUS.map(s => <option key={s.sku} value={s.sku}>{s.label}</option>)}
-                  </select>
-                  <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+                    onChange={(val) => setForm(prev => ({ ...prev, sku: val }))}
+                    options={DEMO_SKUS.map(s => ({ value: s.sku, label: s.label }))}
+                  />
                 </div>
               </div>
               <div>
@@ -127,7 +125,7 @@ export default function OrdersPage({ orders = [] }) {
                   type="button"
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="w-full bg-primary-container text-on-primary-container font-label-caps text-label-caps py-2.5 px-4 rounded hover:bg-primary-fixed transition-colors flex items-center justify-center gap-2 font-bold uppercase tracking-wider disabled:opacity-50"
+                  className="w-full bg-primary/20 border border-primary/50 text-primary font-label-caps text-label-caps py-2.5 px-4 rounded hover:bg-primary hover:text-on-primary transition-colors flex items-center justify-center gap-2 font-bold uppercase tracking-wider disabled:opacity-50 shadow-[0_0_15px_rgba(173,198,255,0.2)]"
                 >
                   <span className="material-symbols-outlined">send</span>
                   Dispatch Order
@@ -137,7 +135,7 @@ export default function OrdersPage({ orders = [] }) {
           </section>
           
           {/* Demo Controls Section */}
-          <section className="bg-surface-container rounded-lg border border-outline-variant p-container-padding shadow-[0_4px_24px_-8px_rgba(0,0,0,0.5)]">
+          <section className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-lg p-container-padding shadow-[0_4px_24px_-8px_rgba(0,0,0,0.5)]">
             <div className="flex items-center gap-2 mb-3 border-b border-outline-variant pb-2">
               <span className="material-symbols-outlined text-tertiary">science</span>
               <h2 className="font-title-sm text-title-sm text-on-surface">Demo Controls</h2>
@@ -181,8 +179,8 @@ export default function OrdersPage({ orders = [] }) {
         
         {/* Right Column: Live Order Timeline */}
         <div className="lg:col-span-7 h-full flex flex-col">
-          <section className="bg-surface-container rounded-lg border border-outline-variant flex-1 flex flex-col overflow-hidden shadow-[0_4px_24px_-8px_rgba(0,0,0,0.5)]">
-            <div className="p-container-padding border-b border-outline-variant flex justify-between items-center bg-surface-container-high z-10">
+          <section className="bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-lg flex-1 flex flex-col overflow-hidden shadow-[0_4px_24px_-8px_rgba(0,0,0,0.5)]">
+            <div className="p-container-padding border-b border-white/10 flex justify-between items-center bg-surface-container/30 backdrop-blur-md z-10">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">history</span>
                 <h2 className="font-title-sm text-title-sm text-on-surface">Live Order Timeline</h2>
@@ -225,7 +223,7 @@ export default function OrdersPage({ orders = [] }) {
                           </span>
                         </div>
                         <p className="font-body-md text-body-md text-on-surface text-sm">
-                          {order.items && order.items.length > 0 ? `${order.items[0].productName} x ${order.items[0].quantity}` : 'Items...'}
+                          {order.items && order.items.length > 0 ? `${DEMO_SKUS.find(s => s.sku === order.items[0].sku)?.label || order.items[0].sku} x ${order.items[0].quantity}` : 'Items...'}
                         </p>
                         
                         {order.status === 'picking' && (
