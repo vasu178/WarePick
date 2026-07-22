@@ -26,13 +26,33 @@ export default function AnalyticsPage({ bots = [] }) {
   const idlePct = bots.length > 0 ? Math.round((idleBots.length / bots.length) * 100) : 0;
   const errorPct = Math.max(0, 100 - pickingPct - idlePct);
 
+  const handleExportReport = () => {
+    const reportData = {
+      generatedAt: new Date().toISOString(),
+      summary,
+      systemEvents: systemEvents.slice(0, 100),
+    };
+    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `warepick-analytics-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="flex-1 p-margin mb-8 overflow-y-auto overflow-x-hidden flex flex-col">
       <div className="flex justify-between items-end mb-stack-lg shrink-0">
         <h1 className="font-headline-md text-headline-md text-primary">System Analytics</h1>
         <div className="flex gap-2">
           <button className="bg-surface-container-high border border-outline-variant text-on-surface px-4 py-2 rounded-DEFAULT font-label-caps text-label-caps uppercase hover:bg-surface-variant transition-colors">Last 24 Hours</button>
-          <button className="bg-primary text-on-primary px-4 py-2 rounded-DEFAULT font-label-caps text-label-caps uppercase hover:opacity-90 transition-opacity flex items-center gap-2">
+          <button 
+            onClick={handleExportReport}
+            className="bg-primary text-on-primary px-4 py-2 rounded-DEFAULT font-label-caps text-label-caps uppercase hover:opacity-90 transition-opacity flex items-center gap-2"
+          >
             <span className="material-symbols-outlined text-[16px]">download</span> Export Report
           </button>
         </div>

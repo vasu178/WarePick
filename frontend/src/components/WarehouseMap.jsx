@@ -381,6 +381,15 @@ export default function WarehouseMap({ bots = [], botPositions = {}, onBotClick 
     });
   }, []);
 
+  /* ─── Pan buttons ────────────────────────────────────────────── */
+  const panDirection = useCallback((dx, dy) => {
+    setViewBox(vb => ({
+      ...vb,
+      x: vb.x + dx * vb.w * 0.2,
+      y: vb.y + dy * vb.h * 0.2,
+    }));
+  }, []);
+
   const resetView = useCallback(() => {
     setViewBox({ ...DEFAULT_VIEWBOX });
   }, []);
@@ -449,18 +458,47 @@ export default function WarehouseMap({ bots = [], botPositions = {}, onBotClick 
 
       {/* Map Container */}
       <div className="relative flex-1 overflow-hidden">
-        {/* Zoom Controls */}
-        <div className="absolute top-3 right-3 z-10 flex flex-col gap-1">
-          <button
-            className="w-8 h-8 bg-surface-container-high border border-outline-variant rounded text-on-surface hover:bg-surface-bright hover:text-primary transition-colors flex items-center justify-center font-mono text-lg"
-            onClick={zoomIn}
-            title="Zoom In"
-          >+</button>
-          <button
-            className="w-8 h-8 bg-surface-container-high border border-outline-variant rounded text-on-surface hover:bg-surface-bright hover:text-primary transition-colors flex items-center justify-center font-mono text-lg"
-            onClick={zoomOut}
-            title="Zoom Out"
-          >−</button>
+        {/* Zoom and Pan Controls */}
+        <div className="absolute top-3 right-3 z-10 flex flex-col gap-4">
+          {/* Zoom */}
+          <div className="flex flex-col gap-1 shadow-md">
+            <button
+              className="w-8 h-8 bg-surface-container-high border border-outline-variant rounded-t text-on-surface hover:bg-surface-bright hover:text-primary transition-colors flex items-center justify-center font-mono text-lg"
+              onClick={zoomIn}
+              title="Zoom In"
+            >+</button>
+            <button
+              className="w-8 h-8 bg-surface-container-high border border-outline-variant border-t-0 rounded-b text-on-surface hover:bg-surface-bright hover:text-primary transition-colors flex items-center justify-center font-mono text-lg"
+              onClick={zoomOut}
+              title="Zoom Out"
+            >−</button>
+          </div>
+          
+          {/* Pan */}
+          <div className="grid grid-cols-3 gap-1 shadow-md p-1 bg-surface-container-high border border-outline-variant rounded">
+            <div />
+            <button
+              className="w-6 h-6 bg-surface border border-outline-variant rounded text-on-surface hover:bg-surface-bright hover:text-primary transition-colors flex items-center justify-center text-xs"
+              onClick={() => panDirection(0, -1)}
+              title="Pan Up"
+            >▲</button>
+            <div />
+            <button
+              className="w-6 h-6 bg-surface border border-outline-variant rounded text-on-surface hover:bg-surface-bright hover:text-primary transition-colors flex items-center justify-center text-xs"
+              onClick={() => panDirection(-1, 0)}
+              title="Pan Left"
+            >◀</button>
+            <button
+              className="w-6 h-6 bg-surface border border-outline-variant rounded text-on-surface hover:bg-surface-bright hover:text-primary transition-colors flex items-center justify-center text-xs"
+              onClick={() => panDirection(0, 1)}
+              title="Pan Down"
+            >▼</button>
+            <button
+              className="w-6 h-6 bg-surface border border-outline-variant rounded text-on-surface hover:bg-surface-bright hover:text-primary transition-colors flex items-center justify-center text-xs"
+              onClick={() => panDirection(1, 0)}
+              title="Pan Right"
+            >▶</button>
+          </div>
         </div>
 
         {/* SVG Canvas */}

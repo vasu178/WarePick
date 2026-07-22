@@ -1,22 +1,31 @@
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAnalytics } from '../hooks/useWarePick';
 
 /**
  * Convert backend grid coordinates (21x17) to the new 800x600 SVG space.
  */
 function gridToNewSVG(gx, gy) {
   // New mapping: aisles at gx=2,6,10,14,18 map to 96, 256, 416, 576, 736.
-  // Formula: gx * 40 + 16
-  return [gx * 40 + 16, 64 + (gy || 0) * 32];
+  let svgY = 64 + (gy || 0) * 32;
+  
+  if (gy === 14) {
+    svgY = 534; // Center between 3rd shelf row (y=496) and packing station (y=572)
+  } else if (gy === 15) {
+    svgY = 602; // Center inside packing/shipping station
+  }
+  
+  return [gx * 40 + 16, svgY];
 }
 
-function mapBotStatusToColor(status) {
-  if (['picking', 'assigned', 'busy'].includes(status)) return 'primary';
-  if (status === 'delivering_to_packing') return 'accent';
-  if (status === 'delivering_to_shipping') return 'warning';
-  if (status === 'returning') return 'tertiary';
-  if (status === 'charging') return 'secondary';
-  return 'secondary';
+function getBotColorToken(botCode) {
+  if (!botCode) return 'primary';
+  if (botCode.includes('1')) return 'primary';
+  if (botCode.includes('2')) return 'secondary';
+  if (botCode.includes('3')) return 'tertiary';
+  if (botCode.includes('4')) return 'accent';
+  if (botCode.includes('5')) return 'warning';
+  return 'primary';
 }
 
 function getHexColor(colorStr) {
@@ -32,53 +41,120 @@ function getHexColor(colorStr) {
 function DynamicBot({ bot, position, onClick }) {
   const [svgX, svgY] = gridToNewSVG(position?.x ?? bot?.x_position, position?.y ?? bot?.y_position);
   const statusStr = position?.status ?? bot?.status ?? 'idle';
-  const colorToken = mapBotStatusToColor(statusStr);
+  const colorToken = getBotColorToken(bot?.bot_code);
   const colorHex = getHexColor(colorToken);
   
   const botCode = (bot?.bot_code || bot?.id || '?').replace('BOT-', '').replace('0', '');
 
+  const [trail, setTrail] = React.useState([]);
+
+  React.useEffect(() => {
+    if (statusStr === 'idle') {
+      setTrail([]);
+    } else {
+      setTrail(prev => {
+        const last = prev[prev.length - 1];
+        if (!last || last.x !== svgX || last.y !== svgY) {
+          return [...prev, { x: svgX, y: svgY }];
+        }
+        return prev;
+      });
+    }
+  }, [svgX, svgY, statusStr]);
+
   return (
-    <motion.g
-      initial={false}
-      animate={{ x: svgX, y: svgY }}
-      transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
-      onClick={() => onClick && onClick(bot.id)}
-      style={{ cursor: 'pointer' }}
-    >
-      <circle cx="0" cy="0" fill="#1c2028" r="16" stroke={colorHex} strokeWidth="2"></circle>
-      <circle cx="0" cy="0" fill="none" opacity="0.3" r="20" stroke={colorHex} strokeWidth="1"></circle>
-      <text fill={colorHex} fontFamily="Inter" fontSize="10" fontWeight="bold" textAnchor="middle" x="0" y="28">BOT-{botCode}</text>
-      <rect fill="none" height="10" rx="2" stroke={colorHex} strokeWidth="1.5" width="12" x="-6" y="-5"></rect>
-      <circle cx="-3" cy="-1" fill={colorHex} r="1"></circle>
-      <circle cx="3" cy="-1" fill={colorHex} r="1"></circle>
-      <line stroke={colorHex} strokeWidth="1" x1="-3" x2="3" y1="3" y2="3"></line>
-      <line stroke={colorHex} strokeWidth="1.5" x1="0" x2="0" y1="-5" y2="-8"></line>
-      <circle cx="0" cy="-9" fill={colorHex} r="1.5"></circle>
-    </motion.g>
+    <>
+      {trail.length > 1 && (
+        <polyline 
+          points={trail.map(p => `${p.x},${p.y}`).join(' ')} 
+          fill="none" 
+          stroke={colorHex} 
+          strokeWidth="3"
+          opacity="0.4"
+          strokeDasharray="4 4"
+        />
+      )}
+      <motion.g
+        initial={false}
+        animate={{ x: svgX, y: svgY }}
+        transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+        onClick={() => onClick && onClick(bot.id)}
+        style={{ cursor: 'pointer' }}
+      >
+        <circle cx="0" cy="0" fill="#1c2028" r="16" stroke={colorHex} strokeWidth="2"></circle>
+        <circle cx="0" cy="0" fill="none" opacity="0.3" r="20" stroke={colorHex} strokeWidth="1"></circle>
+        <text fill={colorHex} fontFamily="Inter" fontSize="10" fontWeight="bold" textAnchor="middle" x="0" y="28">BOT-{botCode}</text>
+        <rect fill="none" height="10" rx="2" stroke={colorHex} strokeWidth="1.5" width="12" x="-6" y="-5"></rect>
+        <circle cx="-3" cy="-1" fill={colorHex} r="1"></circle>
+        <circle cx="3" cy="-1" fill={colorHex} r="1"></circle>
+        <line stroke={colorHex} strokeWidth="1" x1="-3" x2="3" y1="3" y2="3"></line>
+        <line stroke={colorHex} strokeWidth="1.5" x1="0" x2="0" y1="-5" y2="-8"></line>
+        <circle cx="0" cy="-9" fill={colorHex} r="1.5"></circle>
+      </motion.g>
+    </>
   );
 }
 
 export default function WarehouseFloorPage({ bots = [], botPositions = {}, orders = [], onBotClick }) {
   const [zoom, setZoom] = useState(1);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStart = React.useRef({ x: 0, y: 0 });
+  const summary = useAnalytics(4000);
+
   const mapWidth = 900;
   const mapHeight = 660;
   const viewBoxWidth = mapWidth / zoom;
   const viewBoxHeight = mapHeight / zoom;
-  const viewBoxX = (mapWidth - viewBoxWidth) / 2;
-  const viewBoxY = (mapHeight - viewBoxHeight) / 2;
+  const viewBoxX = (mapWidth - viewBoxWidth) / 2 + panX;
+  const viewBoxY = (mapHeight - viewBoxHeight) / 2 + panY;
   const viewBox = `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`;
 
-  // Metrics calculation
-  const orderCounts = (orders || []).reduce((acc, o) => {
-    acc[o.status] = (acc[o.status] || 0) + 1;
-    return acc;
-  }, {});
+  const panDirection = (dx, dy) => {
+    setPanX(prev => prev + dx * viewBoxWidth * 0.2);
+    setPanY(prev => prev + dy * viewBoxHeight * 0.2);
+  };
 
+  const handleMouseDown = (e) => {
+    if (e.button !== 0) return;
+    setIsDragging(true);
+    dragStart.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - dragStart.current.x;
+    const dy = e.clientY - dragStart.current.y;
+    setPanX(prev => prev - dx * 1.5 / zoom);
+    setPanY(prev => prev - dy * 1.5 / zoom);
+    dragStart.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleWheel = (e) => {
+    // Zoom in on scroll up, zoom out on scroll down
+    const zoomDir = e.deltaY < 0 ? 1 : -1;
+    setZoom(prev => {
+      const newZoom = prev + zoomDir * 0.15;
+      return Math.max(0.5, Math.min(newZoom, 3));
+    });
+  };
+
+  // Metrics calculation
   const activeBots = bots.filter(b => ['picking', 'assigned', 'busy'].includes(b.status));
   const activeOrder = (orders || []).find(o => ['picking', 'assigned', 'checking_inventory'].includes(o.status));
 
-  // Determine top 3 bots to show in status
-  const displayBots = bots.slice(0, 3);
+  const formatAvgTime = (sec) => {
+    if (!sec) return '—';
+    return `${Math.floor(sec / 60)}m ${sec % 60}s`;
+  };
+
+  // Show up to 5 bots in status
+  const displayBots = bots.slice(0, 5);
 
   // Fake live events for visual flair, matching the static design but you can plug real ones later
   const events = [
@@ -127,7 +203,7 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
                 <i className="fa-solid fa-minus"></i>
               </button>
               <button 
-                onClick={() => setZoom(1)}
+                onClick={() => { setZoom(1); setPanX(0); setPanY(0); }}
                 className="w-8 h-8 bg-surface border border-outline-variant rounded flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors shadow-sm text-xs font-semibold"
                 title="Reset Zoom"
               >
@@ -136,7 +212,16 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
             </div>
 
             {/* SVG Interactive Map */}
-            <svg className="w-full h-full transition-all duration-300 ease-out" viewBox={viewBox} xmlns="http://www.w3.org/2000/svg">
+            <svg
+              className={`w-full h-full transition-all ease-out ${isDragging ? 'cursor-grabbing duration-0' : 'cursor-grab duration-300'}`}
+              viewBox={viewBox}
+              xmlns="http://www.w3.org/2000/svg"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onWheel={handleWheel}
+            >
               <defs>
                 <pattern height="40" id="grid" patternUnits="userSpaceOnUse" width="40">
                   <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#414755" strokeWidth="0.5"></path>
@@ -229,7 +314,7 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
               </div>
               <div className="min-w-0">
                 <div className="text-[9px] text-on-surface-variant uppercase tracking-wider truncate">Total Orders</div>
-                <div className="text-lg font-semibold text-on-surface leading-tight">{orders?.length || 0}</div>
+                <div className="text-lg font-semibold text-on-surface leading-tight">{summary?.orders?.total ?? 0}</div>
                 <div className="text-[10px] text-on-surface-variant">Today</div>
               </div>
             </div>
@@ -240,7 +325,7 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
               </div>
               <div className="min-w-0">
                 <div className="text-[9px] text-on-surface-variant uppercase tracking-wider truncate">Completed</div>
-                <div className="text-lg font-semibold text-on-surface leading-tight">{orderCounts.shipped || 0}</div>
+                <div className="text-lg font-semibold text-on-surface leading-tight">{summary?.orders?.shipped ?? 0}</div>
                 <div className="text-[10px] text-on-surface-variant flex items-center gap-1">Today <span className="text-secondary text-[9px]"><i className="fa-solid fa-arrow-up"></i> 18%</span></div>
               </div>
             </div>
@@ -251,7 +336,7 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
               </div>
               <div className="min-w-0">
                 <div className="text-[9px] text-on-surface-variant uppercase tracking-wider truncate">In Progress</div>
-                <div className="text-lg font-semibold text-on-surface leading-tight">{(orderCounts.picking || 0) + (orderCounts.assigned || 0)}</div>
+                <div className="text-lg font-semibold text-on-surface leading-tight">{summary?.orders?.inProgress ?? 0}</div>
                 <div className="text-[10px] text-on-surface-variant flex items-center gap-1">Today <span className="text-secondary text-[9px]"><i className="fa-solid fa-arrow-up"></i> 5%</span></div>
               </div>
             </div>
@@ -262,7 +347,7 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
               </div>
               <div className="min-w-0">
                 <div className="text-[9px] text-on-surface-variant uppercase tracking-wider truncate">Failed</div>
-                <div className="text-lg font-semibold text-on-surface leading-tight">{orderCounts.inventory_failed || 0}</div>
+                <div className="text-lg font-semibold text-on-surface leading-tight">{summary?.orders?.failed ?? 0}</div>
                 <div className="text-[10px] text-on-surface-variant flex items-center gap-1">Today <span className="text-error text-[9px]"><i className="fa-solid fa-arrow-down"></i> 50%</span></div>
               </div>
             </div>
@@ -273,7 +358,7 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
               </div>
               <div className="min-w-0">
                 <div className="text-[9px] text-on-surface-variant uppercase tracking-wider truncate">Avg Pick Time</div>
-                <div className="text-lg font-semibold text-on-surface leading-tight">4m 32s</div>
+                <div className="text-lg font-semibold text-on-surface leading-tight">{formatAvgTime(summary?.avgFulfillmentTimeSec)}</div>
                 <div className="text-[10px] text-on-surface-variant">Per Order</div>
               </div>
             </div>
@@ -293,11 +378,7 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
                 const isDeliveringShipping = liveStatus === 'delivering_to_shipping';
                 const isReturning = liveStatus === 'returning';
                 
-                let colorToken = 'secondary';
-                if (isActive) colorToken = 'primary';
-                else if (isDeliveringPacking) colorToken = 'accent';
-                else if (isDeliveringShipping) colorToken = 'warning';
-                else if (isReturning) colorToken = 'tertiary';
+                const colorToken = getBotColorToken(bot.bot_code);
 
                 const pct = (isActive || isDeliveringPacking || isDeliveringShipping) ? 72 : isReturning ? 45 : 100;
                 
