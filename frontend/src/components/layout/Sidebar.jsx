@@ -8,10 +8,10 @@ export default function Sidebar({ activePage, onNavigate }) {
       <div className="flex flex-col gap-unit flex-1">
         <a 
           onClick={() => onNavigate?.('floor')} 
-          className={`flex items-center gap-stack-sm mx-2 px-4 py-3 rounded-lg font-label-caps text-label-caps cursor-pointer transition-colors ${
+          className={`flex items-center gap-stack-sm mx-2 px-4 py-3 rounded-lg font-label-caps text-label-caps cursor-pointer transition-all duration-300 ${
             activePage === 'floor' 
               ? 'bg-secondary-container text-on-secondary-container font-bold transition-transform translate-x-1' 
-              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant'
+              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant hover:-translate-y-1 hover:shadow-md'
           }`}
         >
           <span className="material-symbols-outlined text-lg">precision_manufacturing</span>
@@ -19,10 +19,10 @@ export default function Sidebar({ activePage, onNavigate }) {
         </a>
         <a 
           onClick={() => onNavigate?.('orders')} 
-          className={`flex items-center gap-stack-sm mx-2 px-4 py-3 rounded-lg font-label-caps text-label-caps cursor-pointer transition-colors ${
+          className={`flex items-center gap-stack-sm mx-2 px-4 py-3 rounded-lg font-label-caps text-label-caps cursor-pointer transition-all duration-300 ${
             activePage === 'orders' 
               ? 'bg-secondary-container text-on-secondary-container font-bold transition-transform translate-x-1' 
-              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant'
+              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant hover:-translate-y-1 hover:shadow-md'
           }`}
         >
           <span className="material-symbols-outlined text-lg">inventory_2</span>
@@ -30,21 +30,32 @@ export default function Sidebar({ activePage, onNavigate }) {
         </a>
         <a 
           onClick={() => onNavigate?.('inventory')} 
-          className={`flex items-center gap-stack-sm mx-2 px-4 py-3 rounded-lg font-label-caps text-label-caps cursor-pointer transition-colors ${
+          className={`flex items-center gap-stack-sm mx-2 px-4 py-3 rounded-lg font-label-caps text-label-caps cursor-pointer transition-all duration-300 ${
             activePage === 'inventory' 
               ? 'bg-secondary-container text-on-secondary-container font-bold transition-transform translate-x-1' 
-              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant'
+              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant hover:-translate-y-1 hover:shadow-md'
           }`}
         >
           <span className="material-symbols-outlined text-lg">shelves</span>
           <span>Inventory</span>
         </a>
         <a 
+          onClick={() => onNavigate?.('products')} 
+          className={`flex items-center gap-stack-sm mx-2 px-4 py-3 rounded-lg font-label-caps text-label-caps cursor-pointer transition-all duration-300 ${
+            activePage === 'products' 
+              ? 'bg-secondary-container text-on-secondary-container font-bold transition-transform translate-x-1' 
+              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant hover:-translate-y-1 hover:shadow-md'
+          }`}
+        >
+          <span className="material-symbols-outlined text-lg">category</span>
+          <span>Products</span>
+        </a>
+        <a 
           onClick={() => onNavigate?.('analytics')} 
-          className={`flex items-center gap-stack-sm mx-2 px-4 py-3 rounded-lg font-label-caps text-label-caps cursor-pointer transition-colors ${
+          className={`flex items-center gap-stack-sm mx-2 px-4 py-3 rounded-lg font-label-caps text-label-caps cursor-pointer transition-all duration-300 ${
             activePage === 'analytics' 
               ? 'bg-secondary-container text-on-secondary-container font-bold transition-transform translate-x-1' 
-              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant'
+              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant hover:-translate-y-1 hover:shadow-md'
           }`}
         >
           <span className="material-symbols-outlined text-lg">analytics</span>
@@ -52,10 +63,10 @@ export default function Sidebar({ activePage, onNavigate }) {
         </a>
         <a 
           onClick={() => onNavigate?.('failed')} 
-          className={`flex items-center gap-stack-sm mx-2 px-4 py-3 rounded-lg font-label-caps text-label-caps cursor-pointer transition-colors ${
+          className={`flex items-center gap-stack-sm mx-2 px-4 py-3 rounded-lg font-label-caps text-label-caps cursor-pointer transition-all duration-300 ${
             activePage === 'failed' 
               ? 'bg-error-container text-on-error-container font-bold transition-transform translate-x-1' 
-              : 'text-on-surface-variant hover:text-error hover:bg-error/10'
+              : 'text-on-surface-variant hover:text-error hover:bg-error/10 hover:-translate-y-1 hover:shadow-md'
           }`}
         >
           <span className="material-symbols-outlined text-lg text-error">warning</span>

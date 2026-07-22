@@ -8,6 +8,7 @@ import OrdersPage from './pages/OrdersPage';
 import InventoryPage from './pages/InventoryPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import FailedOrdersPage from './pages/FailedOrdersPage';
+import ProductsPage from './pages/ProductsPage';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -69,6 +70,8 @@ export default function App() {
         return <InventoryPage inventory={inventory} orders={orders} />;
       case 'analytics':
         return <AnalyticsPage bots={bots} />;
+      case 'products':
+        return <ProductsPage inventory={inventory} />;
       case 'failed':
         return <FailedOrdersPage />;
       default:

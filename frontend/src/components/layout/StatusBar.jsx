@@ -9,10 +9,10 @@ export default function StatusBar({ connected }) {
   useEffect(() => {
     const update = () => {
       const now = new Date();
-      const h = String(now.getUTCHours()).padStart(2, '0');
-      const m = String(now.getUTCMinutes()).padStart(2, '0');
-      const s = String(now.getUTCSeconds()).padStart(2, '0');
-      setTime(`${h}:${m}:${s} UTC`);
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      setTime(`${h}:${m}:${s}`);
     };
     update();
     const interval = setInterval(update, 1000);

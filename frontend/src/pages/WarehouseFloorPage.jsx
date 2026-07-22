@@ -153,8 +153,8 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
     return `${Math.floor(sec / 60)}m ${sec % 60}s`;
   };
 
-  // Show up to 5 bots in status
-  const displayBots = bots.slice(0, 5);
+  // Show all bots in status
+  const displayBots = bots;
 
   // Fake live events for visual flair, matching the static design but you can plug real ones later
   const events = [
@@ -368,9 +368,9 @@ export default function WarehouseFloorPage({ bots = [], botPositions = {}, order
         {/* Right Sidebar Area */}
         <div className="w-full lg:w-72 flex flex-col gap-4 shrink-0 min-h-0">
           {/* Bot Status Card */}
-          <div className="bg-surface border border-outline-variant rounded-xl p-4">
-            <h2 className="text-xs font-bold text-on-surface-variant tracking-wider mb-4 uppercase">Bot Status</h2>
-            <div className="space-y-4">
+          <div className="bg-surface border border-outline-variant rounded-xl p-4 flex flex-col max-h-[200px]">
+            <h2 className="text-xs font-bold text-on-surface-variant tracking-wider mb-4 uppercase shrink-0">Bot Status</h2>
+            <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar">
               {displayBots.map(bot => {
                 const liveStatus = botPositions[bot.id]?.status || bot.status;
                 const isActive = ['picking', 'assigned', 'busy'].includes(liveStatus);

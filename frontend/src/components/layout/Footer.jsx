@@ -6,10 +6,10 @@ export default function Footer() {
   useEffect(() => {
     const updateClock = () => {
       const now = new Date();
-      const h = String(now.getUTCHours()).padStart(2, '0');
-      const m = String(now.getUTCMinutes()).padStart(2, '0');
-      const s = String(now.getUTCSeconds()).padStart(2, '0');
-      setTimeStr(`${h}:${m}:${s} UTC`);
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      setTimeStr(`${h}:${m}:${s}`);
     };
     updateClock();
     const intervalId = setInterval(updateClock, 1000);

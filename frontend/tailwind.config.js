@@ -2,6 +2,9 @@
 export default {
   content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
   darkMode: 'class',
+  safelist: [
+    { pattern: /^(bg|text|border|ring)-(primary|secondary|tertiary|accent|warning|error)(\/(10|20|30|50))?$/ }
+  ],
   theme: {
     extend: {
       colors: {
@@ -37,6 +40,9 @@ export default {
         'on-error': '#690005',
         'error-container': '#93000a',
         'on-error-container': '#ffdad6',
+
+        'accent': '#e879f9',
+        'warning': '#fde047',
 
         'background': '#10131b',
         'on-background': '#e0e2ed',

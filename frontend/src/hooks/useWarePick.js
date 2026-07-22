@@ -24,7 +24,7 @@ export function useRealtimeTable(tableName, options = {}) {
     });
 
     const channel = supabase
-      .channel(`rt-${tableName}-${JSON.stringify(filter || {})}`)
+      .channel(`rt-${tableName}-${JSON.stringify(filter || {})}-${Math.random().toString(36).substr(2, 9)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, (payload) => {
         setData((prev) => {
           if (payload.eventType === 'INSERT') {

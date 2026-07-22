@@ -51,6 +51,16 @@ export default function FailedOrdersPage() {
     }
   };
 
+  const handleRemove = async (orderId) => {
+    try {
+      const { error } = await supabase.from('orders').delete().eq('id', orderId);
+      if (error) throw error;
+    } catch (err) {
+      console.error(err);
+      alert(`Error removing order: ${err.message}`);
+    }
+  };
+
   return (
     <div className="flex-1 p-margin overflow-y-auto overflow-x-hidden flex flex-col">
       <header className="mb-stack-lg flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
@@ -114,7 +124,14 @@ export default function FailedOrdersPage() {
                     </div>
                   </div>
                   
-                  <div className="shrink-0 ml-4">
+                  <div className="shrink-0 ml-4 flex gap-2">
+                    <button
+                      onClick={() => handleRemove(order.id)}
+                      className="bg-error/10 text-error border border-error/30 hover:bg-error hover:text-on-error font-label-caps text-label-caps py-2 px-4 rounded transition-colors flex items-center justify-center gap-2 uppercase"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">delete</span>
+                      Remove
+                    </button>
                     <button
                       onClick={() => handleReattempt(order.id)}
                       disabled={retryingId === order.id}
