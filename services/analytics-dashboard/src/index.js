@@ -33,7 +33,7 @@ app.get('/analytics/summary', async (req, res) => {
 
     const total = orders ? orders.length : 0;
     const shipped = orders ? orders.filter((o) => o.status === 'shipped').length : 0;
-    const failed = orders ? orders.filter((o) => ['inventory_failed', 'fulfillment_error'].includes(o.status)).length : 0;
+    const failed = orders ? orders.filter((o) => ['failed', 'inventory_failed', 'fulfillment_error'].includes(o.status)).length : 0;
     const inProgress = total - shipped - failed;
 
     // Average fulfillment time (for shipped orders)

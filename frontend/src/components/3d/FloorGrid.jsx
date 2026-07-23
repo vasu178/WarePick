@@ -4,7 +4,7 @@ import { Html } from '@react-three/drei';
 
 export default function FloorGrid() {
   const gridHelper = useMemo(() => {
-    const grid = new THREE.GridHelper(26, 26, '#3b4252', '#242933');
+    const grid = new THREE.GridHelper(200, 200, '#3b4252', '#242933');
     grid.position.y = 0.01;
     return grid;
   }, []);
@@ -13,7 +13,7 @@ export default function FloorGrid() {
     <group>
       {/* Dark metallic main floor */}
       <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-        <planeGeometry args={[28, 22]} />
+        <planeGeometry args={[200, 200]} />
         <meshStandardMaterial color="#12141a" roughness={0.6} metalness={0.4} />
       </mesh>
 
