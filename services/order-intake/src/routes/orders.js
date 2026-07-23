@@ -239,10 +239,10 @@ router.post('/reset', async (req, res) => {
     // Reset bots to idle at dock
     const botDefaults = [
       { bot_code: 'BOT-01', status: 'idle', x_position: 2, y_position: 1, current_task_id: null },
-      { bot_code: 'BOT-02', status: 'idle', x_position: 5, y_position: 1, current_task_id: null },
-      { bot_code: 'BOT-03', status: 'idle', x_position: 8, y_position: 1, current_task_id: null },
-      { bot_code: 'BOT-04', status: 'idle', x_position: 11, y_position: 1, current_task_id: null },
-      { bot_code: 'BOT-05', status: 'idle', x_position: 14, y_position: 1, current_task_id: null },
+      { bot_code: 'BOT-02', status: 'idle', x_position: 6, y_position: 1, current_task_id: null },
+      { bot_code: 'BOT-03', status: 'idle', x_position: 10, y_position: 1, current_task_id: null },
+      { bot_code: 'BOT-04', status: 'idle', x_position: 14, y_position: 1, current_task_id: null },
+      { bot_code: 'BOT-05', status: 'idle', x_position: 18, y_position: 1, current_task_id: null },
     ];
     for (const bot of botDefaults) {
       await supabase.from('bots').update(bot).eq('bot_code', bot.bot_code);

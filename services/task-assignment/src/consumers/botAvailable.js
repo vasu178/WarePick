@@ -10,6 +10,7 @@ const { publish } = require('../../../../shared/rabbitmq');
 const EVENTS = require('../../../../shared/events');
 const STATUSES = require('../../../../shared/statuses');
 const { SERVICE_NAME } = require('../config');
+const { acquireLock, releaseLock } = require('../mutex');
 
 const supabase = createServiceClient();
 
@@ -23,62 +24,79 @@ async function handleBotAvailable(msg, channel) {
 
   console.log(`🤖 [${SERVICE_NAME}] Bot ${botCode} is available — checking for queued tasks...`);
 
-  // Find oldest queued task
-  const { data: queuedTask, error: taskError } = await supabase
-    .from('tasks')
-    .select('*')
-    .eq('status', 'queued')
-    .order('id', { ascending: true })
-    .limit(1)
-    .maybeSingle();
+  await acquireLock();
+  try {
+    // Find oldest queued task
+    const { data: queuedTask, error: taskError } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('status', 'queued')
+      .order('id', { ascending: true })
+      .limit(1)
+      .maybeSingle();
 
-  if (taskError) {
-    console.error(`❌ [${SERVICE_NAME}] Error querying queued tasks:`, taskError.message);
-    return;
+    if (taskError) {
+      console.error(`❌ [${SERVICE_NAME}] Error querying queued tasks:`, taskError.message);
+      return;
+    }
+
+    if (!queuedTask) {
+      console.log(`✅ [${SERVICE_NAME}] No queued tasks — bot ${botCode} stays idle`);
+      return;
+    }
+
+    // Verify bot is actually idle before assigning
+    const { data: currentBot, error: botStatusError } = await supabase
+      .from('bots')
+      .select('status')
+      .eq('id', botId)
+      .single();
+
+    if (botStatusError || !currentBot || currentBot.status !== 'idle') {
+      console.log(`⚠️ [${SERVICE_NAME}] Bot ${botCode} is no longer idle! Skipping task assignment.`);
+      return;
+    }
+
+    console.log(`📦 [${SERVICE_NAME}] Assigning queued task ${queuedTask.id} to ${botCode}`);
+
+    // Update task
+    await supabase
+      .from('tasks')
+      .update({
+        bot_id: botId,
+        status: 'assigned',
+        assigned_at: new Date().toISOString(),
+      })
+      .eq('id', queuedTask.id);
+
+    // Update bot
+    await supabase
+      .from('bots')
+      .update({ status: 'assigned', current_task_id: queuedTask.id })
+      .eq('id', botId);
+
+    // Update order status
+    await supabase
+      .from('orders')
+      .update({ status: STATUSES.TASK_ASSIGNED })
+      .eq('id', queuedTask.order_id);
+
+    // Publish task.assigned
+    publish(channel, EVENTS.TASK_ASSIGNED, {
+      eventName: EVENTS.TASK_ASSIGNED,
+      taskId: queuedTask.id,
+      orderId: queuedTask.order_id,
+      botId,
+      botCode,
+      sourceShelves: queuedTask.source_shelves,
+      destinationZone: 'PACKING',
+      createdAt: new Date().toISOString(),
+    });
+
+    console.log(`✅ [${SERVICE_NAME}] Queued task ${queuedTask.id} assigned to ${botCode}`);
+  } finally {
+    releaseLock();
   }
-
-  if (!queuedTask) {
-    console.log(`✅ [${SERVICE_NAME}] No queued tasks — bot ${botCode} stays idle`);
-    return;
-  }
-
-  console.log(`📦 [${SERVICE_NAME}] Assigning queued task ${queuedTask.id} to ${botCode}`);
-
-  // Update task
-  await supabase
-    .from('tasks')
-    .update({
-      bot_id: botId,
-      status: 'assigned',
-      assigned_at: new Date().toISOString(),
-    })
-    .eq('id', queuedTask.id);
-
-  // Update bot
-  await supabase
-    .from('bots')
-    .update({ status: 'assigned', current_task_id: queuedTask.id })
-    .eq('id', botId);
-
-  // Update order status
-  await supabase
-    .from('orders')
-    .update({ status: STATUSES.TASK_ASSIGNED })
-    .eq('id', queuedTask.order_id);
-
-  // Publish task.assigned
-  publish(channel, EVENTS.TASK_ASSIGNED, {
-    eventName: EVENTS.TASK_ASSIGNED,
-    taskId: queuedTask.id,
-    orderId: queuedTask.order_id,
-    botId,
-    botCode,
-    sourceShelves: queuedTask.source_shelves,
-    destinationZone: 'PACKING',
-    createdAt: new Date().toISOString(),
-  });
-
-  console.log(`✅ [${SERVICE_NAME}] Queued task ${queuedTask.id} assigned to ${botCode}`);
 }
 
 module.exports = { handleBotAvailable };

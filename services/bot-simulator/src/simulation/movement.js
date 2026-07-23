@@ -208,9 +208,8 @@ async function simulatePicking(bot, shelfCodes, taskId, channel) {
   // 3. Return to dock
   await supabase.from('bots').update({ status: 'returning' }).eq('id', bot.id);
 
-  // Find original dock position for this bot
-  const botIndex = parseInt(bot.bot_code.replace('BOT-0', '').replace('BOT-', '')) - 1;
-  const dockPos = DOCK_POSITIONS[botIndex] || DOCK_POSITIONS[0];
+  // Find original dock position for this bot (where it started picking from)
+  const dockPos = { x: bot.x_position, y: bot.y_position };
 
   const pathToDock = calculatePath(currentX, currentY, dockPos.x, dockPos.y);
   if (pathToDock.length > 0) {
